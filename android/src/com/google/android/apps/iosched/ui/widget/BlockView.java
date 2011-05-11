@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,16 @@ package com.google.android.apps.iosched.ui.widget;
 
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract.Blocks;
+import com.google.android.apps.iosched.util.UIUtils;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.LayerDrawable;
+import android.text.format.DateUtils;
 import android.widget.Button;
+
+import java.util.TimeZone;
 
 /**
  * Custom view that represents a {@link Blocks#BLOCK_ID} instance, including its
@@ -31,6 +35,10 @@ import android.widget.Button;
  * {@link BlocksLayout} to match up against a {@link TimeRulerView} instance.
  */
 public class BlockView extends Button {
+    private static final int TIME_STRING_FLAGS = DateUtils.FORMAT_SHOW_DATE
+            | DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_ABBREV_WEEKDAY |
+            DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_ABBREV_TIME;
+
     private final String mBlockId;
     private final String mTitle;
     private final long mStartTime;
@@ -52,23 +60,17 @@ public class BlockView extends Button {
         setText(mTitle);
 
         // TODO: turn into color state list with layers?
-        int textColor = -1;
+        int textColor = Color.WHITE;
         int accentColor = -1;
         switch (mColumn) {
             case 0:
-                // blue
-                textColor = Color.WHITE;
-                accentColor = Color.parseColor("#18b6e6");
+                accentColor = getResources().getColor(R.color.block_column_1);
                 break;
             case 1:
-                // red
-                textColor = Color.WHITE;
-                accentColor = Color.parseColor("#df1831");
+                accentColor = getResources().getColor(R.color.block_column_2);
                 break;
             case 2:
-                // green
-                textColor = Color.WHITE;
-                accentColor = Color.parseColor("#00a549");
+                accentColor = getResources().getColor(R.color.block_column_3);
                 break;
         }
 
@@ -83,6 +85,11 @@ public class BlockView extends Button {
 
     public String getBlockId() {
         return mBlockId;
+    }
+
+    public String getBlockTimeString() {
+        TimeZone.setDefault(UIUtils.CONFERENCE_TIME_ZONE);
+        return DateUtils.formatDateTime(getContext(), mStartTime, TIME_STRING_FLAGS);
     }
 
     public long getStartTime() {

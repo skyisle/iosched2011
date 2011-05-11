@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,19 @@ package com.google.android.apps.iosched.provider;
 import com.google.android.apps.iosched.util.ParserUtils;
 
 import android.app.SearchManager;
-import android.content.ContentUris;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.format.DateUtils;
+
+import java.util.List;
 
 /**
  * Contract class for interacting with {@link ScheduleProvider}. Unless
  * otherwise noted, all time-based fields are milliseconds since epoch and can
  * be compared against {@link System#currentTimeMillis()}.
  * <p>
- * The backing {@link ContentProvider} assumes that {@link Uri} are generated
+ * The backing {@link android.content.ContentProvider} assumes that {@link Uri} are generated
  * using stronger {@link String} identifiers, instead of {@code int}
  * {@link BaseColumns#_ID} values, which are prone to shuffle during sync.
  */
@@ -89,26 +90,34 @@ public class ScheduleContract {
     interface SessionsColumns {
         /** Unique string identifying this session. */
         String SESSION_ID = "session_id";
-        /** Type of session, such as difficulty level. */
-        String TYPE = "type";
+        /** Difficulty level of the session. */
+        String SESSION_LEVEL = "session_level";
         /** Title describing this track. */
-        String TITLE = "title";
+        String SESSION_TITLE = "session_title";
         /** Body of text explaining this session in detail. */
-        String ABSTRACT = "abstract";
+        String SESSION_ABSTRACT = "session_abstract";
         /** Requirements that attendees should meet. */
-        String REQUIREMENTS = "requirements";
-        /** User-specific flag indicating starred status. */
-        String STARRED = "starred";
+        String SESSION_REQUIREMENTS = "session_requirements";
+        /** Kewords/tags for this session. */
+        String SESSION_KEYWORDS = "session_keywords";
+        /** Hashtag for this session. */
+        String SESSION_HASHTAG = "session_hashtag";
+        /** Slug (short name) for this session. */
+        String SESSION_SLUG = "session_slug";
+        /** Full URL to session online. */
+        String SESSION_URL = "session_url";
         /** Link to Moderator for this session. */
-        String MODERATOR_URL = "moderator_url";
-        /** Link to Wave for this session. */
-        String WAVE_URL = "wave_url";
-        /** Additional keywords that describe this session. */
-        String KEYWORDS = "keywords";
-        /** Hashtag used to identify this session in social media. */
-        String HASHTAG = "hashtag";
-
-        // TODO: moderator, wave, other online links
+        String SESSION_MODERATOR_URL = "session_moderator_url";
+        /** Full URL to YouTube. */
+        String SESSION_YOUTUBE_URL = "session_youtube_url";
+        /** Full URL to PDF. */
+        String SESSION_PDF_URL = "session_pdf_url";
+        /** Full URL to speakermeter/external feedback URL. */
+        String SESSION_FEEDBACK_URL = "session_feedback_url";
+        /** Full URL to official session notes. */
+        String SESSION_NOTES_URL = "session_notes_url";
+        /** User-specific flag indicating starred status. */
+        String SESSION_STARRED = "session_starred";
     }
 
     interface SpeakersColumns {
@@ -116,38 +125,33 @@ public class ScheduleContract {
         String SPEAKER_ID = "speaker_id";
         /** Name of this speaker. */
         String SPEAKER_NAME = "speaker_name";
+        /** Profile photo of this speaker. */
+        String SPEAKER_IMAGE_URL = "speaker_image_url";
         /** Company this speaker works for. */
         String SPEAKER_COMPANY = "speaker_company";
         /** Body of text describing this speaker in detail. */
         String SPEAKER_ABSTRACT = "speaker_abstract";
+        /** Full URL to the speaker's profile. */
+        String SPEAKER_URL = "speaker_url";
     }
 
     interface VendorsColumns {
         /** Unique string identifying this vendor. */
         String VENDOR_ID = "vendor_id";
         /** Name of this vendor. */
-        String NAME = "name";
+        String VENDOR_NAME = "vendor_name";
         /** Location or city this vendor is based in. */
-        String LOCATION = "location";
+        String VENDOR_LOCATION = "vendor_location";
         /** Body of text describing this vendor. */
-        String DESC = "desc";
+        String VENDOR_DESC = "vendor_desc";
         /** Link to vendor online. */
-        String URL = "url";
+        String VENDOR_URL = "vendor_url";
         /** Body of text describing the product of this vendor. */
-        String PRODUCT_DESC = "product_desc";
+        String VENDOR_PRODUCT_DESC = "vendor_product_desc";
         /** Link to vendor logo. */
-        String LOGO_URL = "logo_url";
-        /** {@link #LOGO_URL} stored as local blob, when available. */
-        String LOGO = "logo";
+        String VENDOR_LOGO_URL = "vendor_logo_url";
         /** User-specific flag indicating starred status. */
-        String STARRED = "starred";
-    }
-
-    interface NotesColumns {
-        /** Time this note was created. */
-        String NOTE_TIME = "note_time";
-        /** User-generated content of note. */
-        String NOTE_CONTENT = "note_content";
+        String VENDOR_STARRED = "vendor_starred";
     }
 
     public static final String CONTENT_AUTHORITY = "com.google.android.apps.iosched";
@@ -163,7 +167,6 @@ public class ScheduleContract {
     private static final String PATH_STARRED = "starred";
     private static final String PATH_SPEAKERS = "speakers";
     private static final String PATH_VENDORS = "vendors";
-    private static final String PATH_NOTES = "notes";
     private static final String PATH_EXPORT = "export";
     private static final String PATH_SEARCH = "search";
     private static final String PATH_SEARCH_SUGGEST = "search_suggest_query";
@@ -186,7 +189,7 @@ public class ScheduleContract {
 
         /**
          * Flag indicating that at least one {@link Sessions#SESSION_ID} inside
-         * this block has {@link Sessions#STARRED} set.
+         * this block has {@link Sessions#SESSION_STARRED} set.
          */
         public static final String CONTAINS_STARRED = "contains_starred";
 
@@ -252,6 +255,9 @@ public class ScheduleContract {
 
         /** Default "ORDER BY" clause. */
         public static final String DEFAULT_SORT = TracksColumns.TRACK_NAME + " ASC";
+
+        /** "All tracks" ID. */
+        public static final String ALL_TRACK_ID = "all";
 
         /** Build {@link Uri} for requested {@link #TRACK_ID}. */
         public static Uri buildTrackUri(String trackId) {
@@ -355,7 +361,7 @@ public class ScheduleContract {
         // TODO: shortcut primary track to offer sub-sorting here
         /** Default "ORDER BY" clause. */
         public static final String DEFAULT_SORT = BlocksColumns.BLOCK_START + " ASC,"
-                + SessionsColumns.TITLE + " COLLATE NOCASE ASC";
+                + SessionsColumns.SESSION_TITLE + " COLLATE NOCASE ASC";
 
         /** Build {@link Uri} for requested {@link #SESSION_ID}. */
         public static Uri buildSessionUri(String sessionId) {
@@ -378,14 +384,6 @@ public class ScheduleContract {
             return CONTENT_URI.buildUpon().appendPath(sessionId).appendPath(PATH_TRACKS).build();
         }
 
-        /**
-         * Build {@link Uri} that references any {@link Notes} associated with
-         * the requested {@link #SESSION_ID}.
-         */
-        public static Uri buildNotesDirUri(String sessionId) {
-            return CONTENT_URI.buildUpon().appendPath(sessionId).appendPath(PATH_NOTES).build();
-        }
-
         public static Uri buildSessionsAtDirUri(long time) {
             return CONTENT_URI.buildUpon().appendPath(PATH_AT).appendPath(String.valueOf(time))
                     .build();
@@ -396,7 +394,8 @@ public class ScheduleContract {
         }
 
         public static boolean isSearchUri(Uri uri) {
-            return PATH_SEARCH.equals(uri.getPathSegments().get(1));
+            List<String> pathSegments = uri.getPathSegments();
+            return pathSegments.size() >= 2 && PATH_SEARCH.equals(pathSegments.get(1));
         }
 
         /** Read {@link #SESSION_ID} from {@link Sessions} {@link Uri}. */
@@ -481,7 +480,8 @@ public class ScheduleContract {
         public static final String SEARCH_SNIPPET = "search_snippet";
 
         /** Default "ORDER BY" clause. */
-        public static final String DEFAULT_SORT = VendorsColumns.NAME + " COLLATE NOCASE ASC";
+        public static final String DEFAULT_SORT = VendorsColumns.VENDOR_NAME
+                + " COLLATE NOCASE ASC";
 
         /** Build {@link Uri} for requested {@link #VENDOR_ID}. */
         public static Uri buildVendorUri(String vendorId) {
@@ -493,7 +493,8 @@ public class ScheduleContract {
         }
 
         public static boolean isSearchUri(Uri uri) {
-            return PATH_SEARCH.equals(uri.getPathSegments().get(1));
+            List<String> pathSegments = uri.getPathSegments();
+            return pathSegments.size() >= 2 && PATH_SEARCH.equals(pathSegments.get(1));
         }
 
         /** Read {@link #VENDOR_ID} from {@link Vendors} {@link Uri}. */
@@ -511,35 +512,6 @@ public class ScheduleContract {
          */
         public static String generateVendorId(String companyLogo) {
             return ParserUtils.sanitizeId(companyLogo);
-        }
-    }
-
-    /**
-     * Notes are user-generated data related to specific {@link Sessions}.
-     */
-    public static class Notes implements NotesColumns, BaseColumns {
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_NOTES).build();
-        public static final Uri CONTENT_EXPORT_URI =
-                CONTENT_URI.buildUpon().appendPath(PATH_EXPORT).build();
-
-        /** {@link Sessions#SESSION_ID} that this note references. */
-        public static final String SESSION_ID = "session_id";
-
-        /** Default "ORDER BY" clause. */
-        public static final String DEFAULT_SORT = NotesColumns.NOTE_TIME + " DESC";
-
-        public static final String CONTENT_TYPE =
-                "vnd.android.cursor.dir/vnd.iosched.note";
-        public static final String CONTENT_ITEM_TYPE =
-                "vnd.android.cursor.item/vnd.iosched.note";
-
-        public static Uri buildNoteUri(long noteId) {
-            return ContentUris.withAppendedId(CONTENT_URI, noteId);
-        }
-
-        public static long getNoteId(Uri uri) {
-            return ContentUris.parseId(uri);
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,6 @@
  */
 
 package com.google.android.apps.iosched.io;
-
-import static com.google.android.apps.iosched.util.ParserUtils.queryItemUpdated;
-import static com.google.android.apps.iosched.util.ParserUtils.sanitizeId;
-import static com.google.android.apps.iosched.util.ParserUtils.AtomTags.ENTRY;
-import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
-import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.provider.ScheduleContract.Speakers;
@@ -38,6 +32,12 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import static com.google.android.apps.iosched.util.ParserUtils.AtomTags.ENTRY;
+import static com.google.android.apps.iosched.util.ParserUtils.queryItemUpdated;
+import static com.google.android.apps.iosched.util.ParserUtils.sanitizeId;
+import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 /**
  * Handle a remote {@link XmlPullParser} that defines a set of {@link Speakers}
@@ -85,8 +85,10 @@ public class RemoteSpeakersHandler extends XmlHandler {
                 builder.withValue(SyncColumns.UPDATED, serverUpdated);
                 builder.withValue(Speakers.SPEAKER_ID, speakerId);
                 builder.withValue(Speakers.SPEAKER_NAME, entry.get(Columns.SPEAKER_TITLE));
+                builder.withValue(Speakers.SPEAKER_IMAGE_URL, entry.get(Columns.SPEAKER_IMAGE_URL));
                 builder.withValue(Speakers.SPEAKER_COMPANY, entry.get(Columns.SPEAKER_COMPANY));
                 builder.withValue(Speakers.SPEAKER_ABSTRACT, entry.get(Columns.SPEAKER_ABSTRACT));
+                builder.withValue(Speakers.SPEAKER_URL, entry.get(Columns.SPEAKER_URL));
 
                 // Normal speaker details ready, write to provider
                 batch.add(builder.build());
@@ -99,14 +101,16 @@ public class RemoteSpeakersHandler extends XmlHandler {
     /** Columns coming from remote spreadsheet. */
     private interface Columns {
         String SPEAKER_TITLE = "speakertitle";
+        String SPEAKER_IMAGE_URL = "speakerimageurl";
         String SPEAKER_COMPANY = "speakercompany";
         String SPEAKER_ABSTRACT = "speakerabstract";
-        String SPEAKER_LDAP = "speakerldap";
+        String SPEAKER_URL = "speakerurl";
 
         // speaker_title: Aaron Koblin
+        // speaker_image_url: http://path/to/image.png
         // speaker_company: Google
-        // speaker_abstract: Aaron takes social and infrastructural data and uses
-        // speaker_ldap: AaronKoblin
+        // speaker_abstract: Aaron takes social and infrastructural data and uses...
+        // speaker_url: http://profiles.google.com/...
 
     }
 }

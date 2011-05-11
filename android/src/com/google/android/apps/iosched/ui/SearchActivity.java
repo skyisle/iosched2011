@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,92 +19,190 @@ package com.google.android.apps.iosched.ui;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract.Sessions;
 import com.google.android.apps.iosched.provider.ScheduleContract.Vendors;
-import com.google.android.apps.iosched.util.UIUtils;
+import com.google.android.apps.iosched.ui.phone.SessionDetailActivity;
+import com.google.android.apps.iosched.ui.phone.VendorDetailActivity;
 
 import android.app.SearchManager;
-import android.app.TabActivity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TabHost;
+import android.widget.TabWidget;
 import android.widget.TextView;
 
-public class SearchActivity extends TabActivity {
+/**
+ * An activity that shows session and sandbox search results. This activity can be either single
+ * or multi-pane, depending on the device configuration. We want the multi-pane support that
+ * {@link BaseMultiPaneActivity} offers, so we inherit from it instead of
+ * {@link BaseSinglePaneActivity}.
+ */
+public class SearchActivity extends BaseMultiPaneActivity {
 
     public static final String TAG_SESSIONS = "sessions";
     public static final String TAG_VENDORS = "vendors";
 
     private String mQuery;
 
+    private TabHost mTabHost;
+    private TabWidget mTabWidget;
+
+    private SessionsFragment mSessionsFragment;
+    private VendorsFragment mVendorsFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();        
+        mQuery = intent.getStringExtra(SearchManager.QUERY);
+
         setContentView(R.layout.activity_search);
 
-        onNewIntent(getIntent());
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        mQuery = intent.getStringExtra(SearchManager.QUERY);
+        getActivityHelper().setupActionBar(getTitle(), 0);
         final CharSequence title = getString(R.string.title_search_query, mQuery);
+        getActivityHelper().setActionBarTitle(title);
 
-        setTitle(title);
-        ((TextView) findViewById(R.id.title_text)).setText(title);
-
-        final TabHost host = getTabHost();
-        host.setCurrentTab(0);
-        host.clearAllTabs();
+        mTabHost = (TabHost) findViewById(android.R.id.tabhost);
+        mTabWidget = (TabWidget) findViewById(android.R.id.tabs);
+        mTabHost.setup();
 
         setupSessionsTab();
         setupVendorsTab();
     }
 
-    public void onHomeClick(View v) {
-        UIUtils.goHome(this);
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        getActivityHelper().setupSubActivity();
+
+        ViewGroup detailContainer = (ViewGroup) findViewById(R.id.fragment_container_search_detail);
+        if (detailContainer != null && detailContainer.getChildCount() > 1) {
+            findViewById(android.R.id.empty).setVisibility(View.GONE);
+        }
     }
 
-    public void onSearchClick(View v) {
-        UIUtils.goSearch(this);
-    }
+    @Override
+    public void onNewIntent(Intent intent) {
+        mQuery = intent.getStringExtra(SearchManager.QUERY);
 
-    /** Build and add "sessions" tab. */
-    private void setupSessionsTab() {
-        final TabHost host = getTabHost();
+        final CharSequence title = getString(R.string.title_search_query, mQuery);
+        getActivityHelper().setActionBarTitle(title);
 
-        final Uri sessionsUri = Sessions.buildSearchUri(mQuery);
-        final Intent intent = new Intent(Intent.ACTION_VIEW, sessionsUri);
-        intent.addCategory(Intent.CATEGORY_TAB);
+        mTabHost.setCurrentTab(0);
 
-        // Sessions content comes from reused activity
-        host.addTab(host.newTabSpec(TAG_SESSIONS)
-                .setIndicator(buildIndicator(R.string.search_sessions))
-                .setContent(intent));
-    }
-
-    /** Build and add "vendors" tab. */
-    private void setupVendorsTab() {
-        final TabHost host = getTabHost();
-
-        final Uri vendorsUri = Vendors.buildSearchUri(mQuery);
-        final Intent intent = new Intent(Intent.ACTION_VIEW, vendorsUri);
-        intent.addCategory(Intent.CATEGORY_TAB);
-
-        // Vendors content comes from reused activity
-        host.addTab(host.newTabSpec(TAG_VENDORS)
-                .setIndicator(buildIndicator(R.string.search_vendors))
-                .setContent(intent));
+        mSessionsFragment.reloadFromArguments(getSessionsFragmentArguments());
+        mVendorsFragment.reloadFromArguments(getVendorsFragmentArguments());
     }
 
     /**
-     * Build a {@link View} to be used as a tab indicator, setting the requested
-     * string resource as its label.
+     * Build and add "sessions" tab.
+     */
+    private void setupSessionsTab() {
+        // TODO: this is very inefficient and messy, clean it up
+        FrameLayout fragmentContainer = new FrameLayout(this);
+        fragmentContainer.setId(R.id.fragment_sessions);
+        fragmentContainer.setLayoutParams(
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+                        ViewGroup.LayoutParams.FILL_PARENT));
+        ((ViewGroup) findViewById(android.R.id.tabcontent)).addView(fragmentContainer);
+
+        final FragmentManager fm = getSupportFragmentManager();
+        mSessionsFragment = (SessionsFragment) fm.findFragmentByTag("sessions");
+        if (mSessionsFragment == null) {
+            mSessionsFragment = new SessionsFragment();
+            mSessionsFragment.setArguments(getSessionsFragmentArguments());
+            fm.beginTransaction()
+                    .add(R.id.fragment_sessions, mSessionsFragment, "sessions")
+                    .commit();
+        }
+
+        // Sessions content comes from reused activity
+        mTabHost.addTab(mTabHost.newTabSpec(TAG_SESSIONS)
+                .setIndicator(buildIndicator(R.string.starred_sessions))
+                .setContent(R.id.fragment_sessions));
+    }
+
+    /**
+     * Build and add "vendors" tab.
+     */
+    private void setupVendorsTab() {
+        // TODO: this is very inefficient and messy, clean it up
+        FrameLayout fragmentContainer = new FrameLayout(this);
+        fragmentContainer.setId(R.id.fragment_vendors);
+        fragmentContainer.setLayoutParams(
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+                        ViewGroup.LayoutParams.FILL_PARENT));
+        ((ViewGroup) findViewById(android.R.id.tabcontent)).addView(fragmentContainer);
+
+        final FragmentManager fm = getSupportFragmentManager();
+        mVendorsFragment = (VendorsFragment) fm.findFragmentByTag("vendors");
+        if (mVendorsFragment == null) {
+            mVendorsFragment = new VendorsFragment();
+            mVendorsFragment.setArguments(getVendorsFragmentArguments());
+            fm.beginTransaction()
+                    .add(R.id.fragment_vendors, mVendorsFragment, "vendors")
+                    .commit();
+        }
+
+        // Vendors content comes from reused activity
+        mTabHost.addTab(mTabHost.newTabSpec(TAG_VENDORS)
+                .setIndicator(buildIndicator(R.string.starred_vendors))
+                .setContent(R.id.fragment_vendors));
+    }
+
+    private Bundle getSessionsFragmentArguments() {
+        return intentToFragmentArguments(
+                new Intent(Intent.ACTION_VIEW, Sessions.buildSearchUri(mQuery)));
+    }
+
+    private Bundle getVendorsFragmentArguments() {
+        return intentToFragmentArguments(
+                new Intent(Intent.ACTION_VIEW, Vendors.buildSearchUri(mQuery)));
+    }
+
+    /**
+     * Build a {@link View} to be used as a tab indicator, setting the requested string resource as
+     * its label.
      */
     private View buildIndicator(int textRes) {
         final TextView indicator = (TextView) getLayoutInflater().inflate(R.layout.tab_indicator,
-                getTabWidget(), false);
+                mTabWidget, false);
         indicator.setText(textRes);
         return indicator;
+    }
+
+    @Override
+    public BaseMultiPaneActivity.FragmentReplaceInfo onSubstituteFragmentForActivityLaunch(
+            String activityClassName) {
+        if (findViewById(R.id.fragment_container_search_detail) != null) {
+            // The layout we currently have has a detail container, we can add fragments there.
+            findViewById(android.R.id.empty).setVisibility(View.GONE);
+            if (SessionDetailActivity.class.getName().equals(activityClassName)) {
+                clearSelectedItems();
+                return new BaseMultiPaneActivity.FragmentReplaceInfo(
+                        SessionDetailFragment.class,
+                        "session_detail",
+                        R.id.fragment_container_search_detail);
+            } else if (VendorDetailActivity.class.getName().equals(activityClassName)) {
+                clearSelectedItems();
+                return new BaseMultiPaneActivity.FragmentReplaceInfo(
+                        VendorDetailFragment.class,
+                        "vendor_detail",
+                        R.id.fragment_container_search_detail);
+            }
+        }
+        return null;
+    }
+
+    private void clearSelectedItems() {
+        if (mSessionsFragment != null) {
+            mSessionsFragment.clearCheckedPosition();
+        }
+        if (mVendorsFragment != null) {
+            mVendorsFragment.clearCheckedPosition();
+        }
     }
 }

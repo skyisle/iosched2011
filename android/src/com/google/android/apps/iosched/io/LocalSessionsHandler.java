@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,6 @@
  */
 
 package com.google.android.apps.iosched.io;
-
-import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
-import static org.xmlpull.v1.XmlPullParser.END_TAG;
-import static org.xmlpull.v1.XmlPullParser.START_TAG;
-import static org.xmlpull.v1.XmlPullParser.TEXT;
 
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.provider.ScheduleContract.Rooms;
@@ -39,6 +34,11 @@ import android.net.Uri;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+import static org.xmlpull.v1.XmlPullParser.END_TAG;
+import static org.xmlpull.v1.XmlPullParser.START_TAG;
+import static org.xmlpull.v1.XmlPullParser.TEXT;
 
 public class LocalSessionsHandler extends XmlHandler {
 
@@ -99,7 +99,7 @@ public class LocalSessionsHandler extends XmlHandler {
                 } else if (Tags.TITLE.equals(tag)) {
                     title = text;
                 } else if (Tags.ABSTRACT.equals(tag)) {
-                    builder.withValue(Sessions.ABSTRACT, text);
+                    builder.withValue(Sessions.SESSION_ABSTRACT, text);
                 }
             }
         }
@@ -109,13 +109,13 @@ public class LocalSessionsHandler extends XmlHandler {
         }
 
         builder.withValue(Sessions.SESSION_ID, sessionId);
-        builder.withValue(Sessions.TITLE, title);
+        builder.withValue(Sessions.SESSION_TITLE, title);
 
         // Use empty strings to make sure SQLite search trigger has valid data
         // for updating search index.
-        builder.withValue(Sessions.ABSTRACT, "");
-        builder.withValue(Sessions.REQUIREMENTS, "");
-        builder.withValue(Sessions.KEYWORDS, "");
+        builder.withValue(Sessions.SESSION_ABSTRACT, "");
+        builder.withValue(Sessions.SESSION_REQUIREMENTS, "");
+        builder.withValue(Sessions.SESSION_KEYWORDS, "");
 
         final String blockId = ParserUtils.findBlock(title, startTime, endTime);
         builder.withValue(Sessions.BLOCK_ID, blockId);
@@ -124,7 +124,7 @@ public class LocalSessionsHandler extends XmlHandler {
         final Uri sessionUri = Sessions.buildSessionUri(sessionId);
         final int starred = querySessionStarred(sessionUri, resolver);
         if (starred != -1) {
-            builder.withValue(Sessions.STARRED, starred);
+            builder.withValue(Sessions.SESSION_STARRED, starred);
         }
 
         batch.add(builder.build());
@@ -139,7 +139,7 @@ public class LocalSessionsHandler extends XmlHandler {
     }
 
     public static int querySessionStarred(Uri uri, ContentResolver resolver) {
-        final String[] projection = { Sessions.STARRED };
+        final String[] projection = { Sessions.SESSION_STARRED };
         final Cursor cursor = resolver.query(uri, projection, null, null, null);
         try {
             if (cursor.moveToFirst()) {

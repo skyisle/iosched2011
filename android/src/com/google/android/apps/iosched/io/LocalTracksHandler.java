@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,6 @@
 
 package com.google.android.apps.iosched.io;
 
-import static com.google.android.apps.iosched.util.ParserUtils.sanitizeId;
-import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
-import static org.xmlpull.v1.XmlPullParser.END_TAG;
-import static org.xmlpull.v1.XmlPullParser.START_TAG;
-import static org.xmlpull.v1.XmlPullParser.TEXT;
-
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.provider.ScheduleContract.Tracks;
 import com.google.android.apps.iosched.util.Lists;
@@ -35,6 +29,12 @@ import android.graphics.Color;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import static com.google.android.apps.iosched.util.ParserUtils.sanitizeId;
+import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+import static org.xmlpull.v1.XmlPullParser.END_TAG;
+import static org.xmlpull.v1.XmlPullParser.START_TAG;
+import static org.xmlpull.v1.XmlPullParser.TEXT;
 
 public class LocalTracksHandler extends XmlHandler {
 

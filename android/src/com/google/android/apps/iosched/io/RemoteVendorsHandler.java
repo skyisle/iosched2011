@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,6 @@
  */
 
 package com.google.android.apps.iosched.io;
-
-import static com.google.android.apps.iosched.util.ParserUtils.sanitizeId;
-import static com.google.android.apps.iosched.util.ParserUtils.AtomTags.ENTRY;
-import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
-import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.provider.ScheduleContract.SyncColumns;
@@ -41,16 +36,17 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static com.google.android.apps.iosched.util.ParserUtils.AtomTags.ENTRY;
+import static com.google.android.apps.iosched.util.ParserUtils.sanitizeId;
+import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+import static org.xmlpull.v1.XmlPullParser.START_TAG;
+
 /**
  * Handle a remote {@link XmlPullParser} that defines a set of {@link Vendors}
  * entries. Assumes that the remote source is a Google Spreadsheet.
  */
 public class RemoteVendorsHandler extends XmlHandler {
     private static final String TAG = "VendorsHandler";
-
-    /** Base {@link Uri} where {@link Columns#COMPANY_LOGO} images live. */
-    private static final Uri LOGO_BASE = Uri
-            .parse("http://code.google.com/events/io/2010/images/");
 
     public RemoteVendorsHandler() {
         super(ScheduleContract.CONTENT_AUTHORITY);
@@ -91,26 +87,24 @@ public class RemoteVendorsHandler extends XmlHandler {
 
                 builder.withValue(SyncColumns.UPDATED, serverUpdated);
                 builder.withValue(Vendors.VENDOR_ID, vendorId);
-                builder.withValue(Vendors.NAME, entry.get(Columns.COMPANY_NAME));
-                builder.withValue(Vendors.LOCATION, entry.get(Columns.COMPANY_LOCATION));
-                builder.withValue(Vendors.DESC, entry.get(Columns.COMPANY_DESC));
-                builder.withValue(Vendors.URL, entry.get(Columns.COMPANY_URL));
-                builder.withValue(Vendors.PRODUCT_DESC, entry.get(Columns.PRODUCT_DESC));
+                builder.withValue(Vendors.VENDOR_NAME, entry.get(Columns.COMPANY_NAME));
+                builder.withValue(Vendors.VENDOR_LOCATION, entry.get(Columns.COMPANY_LOCATION));
+                builder.withValue(Vendors.VENDOR_DESC, entry.get(Columns.COMPANY_DESC));
+                builder.withValue(Vendors.VENDOR_URL, entry.get(Columns.COMPANY_URL));
+                builder.withValue(Vendors.VENDOR_LOGO_URL, entry.get(Columns.COMPANY_LOGO));
+                builder.withValue(Vendors.VENDOR_PRODUCT_DESC,
+                        entry.get(Columns.COMPANY_PRODUCT_DESC));
 
                 // Inherit starred value from previous row
-                if (values.containsKey(Vendors.STARRED)) {
-                    builder.withValue(Vendors.STARRED, values.getAsInteger(Vendors.STARRED));
+                if (values.containsKey(Vendors.VENDOR_STARRED)) {
+                    builder.withValue(Vendors.VENDOR_STARRED,
+                            values.getAsInteger(Vendors.VENDOR_STARRED));
                 }
 
                 // Assign track
                 final String trackId = ParserUtils.translateTrackIdAlias(sanitizeId(entry
                         .get(Columns.COMPANY_POD)));
                 builder.withValue(Vendors.TRACK_ID, trackId);
-
-                // Assign logo path
-                final String logoUrl = LOGO_BASE.buildUpon().appendPath(
-                        entry.get(Columns.COMPANY_LOGO)).build().toString();
-                builder.withValue(Vendors.LOGO_URL, logoUrl);
 
                 // Normal vendor details ready, write to provider
                 batch.add(builder.build());
@@ -126,7 +120,7 @@ public class RemoteVendorsHandler extends XmlHandler {
         try {
             if (cursor.moveToFirst()) {
                 values.put(SyncColumns.UPDATED, cursor.getLong(VendorsQuery.UPDATED));
-                values.put(Vendors.STARRED, cursor.getInt(VendorsQuery.STARRED));
+                values.put(Vendors.VENDOR_STARRED, cursor.getInt(VendorsQuery.STARRED));
             } else {
                 values.put(SyncColumns.UPDATED, ScheduleContract.UPDATED_NEVER);
             }
@@ -139,7 +133,7 @@ public class RemoteVendorsHandler extends XmlHandler {
     private interface VendorsQuery {
         String[] PROJECTION = {
                 SyncColumns.UPDATED,
-                Vendors.STARRED,
+                Vendors.VENDOR_STARRED,
         };
 
         int UPDATED = 0;
@@ -152,16 +146,15 @@ public class RemoteVendorsHandler extends XmlHandler {
         String COMPANY_LOCATION = "companylocation";
         String COMPANY_DESC = "companydesc";
         String COMPANY_URL = "companyurl";
-        String PRODUCT_DESC = "productdesc";
+        String COMPANY_PRODUCT_DESC = "companyproductdesc";
         String COMPANY_LOGO = "companylogo";
         String COMPANY_POD = "companypod";
-        String COMPANY_TAGS = "companytags";
 
         // company_name: 280 North, Inc.
         // company_location: San Francisco, California
         // company_desc: Creators of 280 Slides, a web based presentation
         // company_url: www.280north.com
-        // product_desc: 280 Slides relies on the Google AJAX APIs to provide
+        // company_product_desc: 280 Slides relies on the Google AJAX APIs to provide
         // company_logo: 280north.png
         // company_pod: Google APIs
         // company_tags:

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,6 @@
  */
 
 package com.google.android.apps.iosched.io;
-
-import static com.google.android.apps.iosched.util.ParserUtils.sanitizeId;
-import static com.google.android.apps.iosched.util.ParserUtils.splitComma;
-import static com.google.android.apps.iosched.util.ParserUtils.translateTrackIdAlias;
-import static com.google.android.apps.iosched.util.ParserUtils.AtomTags.ENTRY;
-import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
-import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.provider.ScheduleContract.Sessions;
@@ -47,6 +40,13 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import static com.google.android.apps.iosched.util.ParserUtils.AtomTags.ENTRY;
+import static com.google.android.apps.iosched.util.ParserUtils.sanitizeId;
+import static com.google.android.apps.iosched.util.ParserUtils.splitComma;
+import static com.google.android.apps.iosched.util.ParserUtils.translateTrackIdAlias;
+import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 /**
  * Handle a remote {@link XmlPullParser} that defines a set of {@link Sessions}
@@ -79,7 +79,7 @@ public class RemoteSessionsHandler extends XmlHandler {
                 // Process single spreadsheet row at a time
                 final SpreadsheetEntry entry = SpreadsheetEntry.fromParser(parser);
 
-                final String sessionId = sanitizeId(entry.get(Columns.SESSION_LINK));
+                final String sessionId = sanitizeId(entry.get(Columns.SESSION_TITLE));
                 final Uri sessionUri = Sessions.buildSessionUri(sessionId);
 
                 // Check for existing details, only update when changed
@@ -106,18 +106,24 @@ public class RemoteSessionsHandler extends XmlHandler {
 
                 builder.withValue(SyncColumns.UPDATED, serverUpdated);
                 builder.withValue(Sessions.SESSION_ID, sessionId);
-                builder.withValue(Sessions.TYPE, entry.get(Columns.SESSION_TYPE));
-                builder.withValue(Sessions.TITLE, entry.get(Columns.SESSION_TITLE));
-                builder.withValue(Sessions.ABSTRACT, entry.get(Columns.SESSION_ABSTRACT));
-                builder.withValue(Sessions.REQUIREMENTS, entry.get(Columns.SESSION_REQUIREMENTS));
-                builder.withValue(Sessions.MODERATOR_URL, entry.get(Columns.MODERATORLINK));
-                builder.withValue(Sessions.WAVE_URL, entry.get(Columns.WAVELINK));
-                builder.withValue(Sessions.KEYWORDS, entry.get(Columns.TAGS));
-                builder.withValue(Sessions.HASHTAG, entry.get(Columns.SESSION_HASHTAG));
+                builder.withValue(Sessions.SESSION_LEVEL, entry.get(Columns.SESSION_LEVEL));
+                builder.withValue(Sessions.SESSION_TITLE, entry.get(Columns.SESSION_TITLE));
+                builder.withValue(Sessions.SESSION_ABSTRACT, entry.get(Columns.SESSION_ABSTRACT));
+                builder.withValue(Sessions.SESSION_REQUIREMENTS, entry.get(Columns.SESSION_REQUIREMENTS));
+                builder.withValue(Sessions.SESSION_KEYWORDS, entry.get(Columns.SESSION_TAGS));
+                builder.withValue(Sessions.SESSION_HASHTAG, entry.get(Columns.SESSION_HASHTAG));
+                builder.withValue(Sessions.SESSION_SLUG, entry.get(Columns.SESSION_SLUG));
+                builder.withValue(Sessions.SESSION_URL, entry.get(Columns.SESSION_URL));
+                builder.withValue(Sessions.SESSION_MODERATOR_URL, entry.get(Columns.SESSION_MODERATOR_URL));
+                builder.withValue(Sessions.SESSION_YOUTUBE_URL, entry.get(Columns.SESSION_YOUTUBE_URL));
+                builder.withValue(Sessions.SESSION_PDF_URL, entry.get(Columns.SESSION_PDF_URL));
+                builder.withValue(Sessions.SESSION_FEEDBACK_URL, entry.get(Columns.SESSION_FEEDBACK_URL));
+                builder.withValue(Sessions.SESSION_NOTES_URL, entry.get(Columns.SESSION_NOTES_URL));
 
                 // Inherit starred value from previous row
-                if (values.containsKey(Sessions.STARRED)) {
-                    builder.withValue(Sessions.STARRED, values.getAsInteger(Sessions.STARRED));
+                if (values.containsKey(Sessions.SESSION_STARRED)) {
+                    builder.withValue(Sessions.SESSION_STARRED,
+                            values.getAsInteger(Sessions.SESSION_STARRED));
                 }
 
                 // Parse time string from two columns, which is pretty ugly code
@@ -141,14 +147,14 @@ public class RemoteSessionsHandler extends XmlHandler {
                 builder.withValue(Sessions.BLOCK_ID, blockId);
 
                 // Assign room
-                final String roomId = sanitizeId(entry.get(Columns.ROOM));
+                final String roomId = sanitizeId(entry.get(Columns.SESSION_ROOM));
                 builder.withValue(Sessions.ROOM_ID, roomId);
 
                 // Normal session details ready, write to provider
                 batch.add(builder.build());
 
                 // Assign tracks
-                final String[] tracks = splitComma(entry.get(Columns.TRACK));
+                final String[] tracks = splitComma(entry.get(Columns.SESSION_TRACK));
                 for (String track : tracks) {
                     final String trackId = translateTrackIdAlias(sanitizeId(track));
                     batch.add(ContentProviderOperation.newInsert(sessionTracksUri)
@@ -175,7 +181,7 @@ public class RemoteSessionsHandler extends XmlHandler {
      * tied to a specific format. Ideally, if the source used use RFC 3339 we
      * could parse quickly using {@link Time#parse3339}.
      * <p>
-     * Internally assumes PST time zone and year 2010.
+     * Internally assumes PST time zone and year 2011.
      *
      * @param date String of format "Wednesday May 19", usually read from
      *            {@link Columns#SESSION_DATE}.
@@ -183,7 +189,7 @@ public class RemoteSessionsHandler extends XmlHandler {
      *            {@link Columns#SESSION_TIME}.
      */
     private static long parseTime(String date, String time) throws HandlerException {
-        final String composed = String.format("%s 2010 %s -0700", date, time);
+        final String composed = String.format("%s 2011 %s -0700", date, time);
         try {
             return sTimeFormat.parse(composed).getTime();
         } catch (java.text.ParseException e) {
@@ -197,7 +203,7 @@ public class RemoteSessionsHandler extends XmlHandler {
         try {
             if (cursor.moveToFirst()) {
                 values.put(SyncColumns.UPDATED, cursor.getLong(SessionsQuery.UPDATED));
-                values.put(Sessions.STARRED, cursor.getInt(SessionsQuery.STARRED));
+                values.put(Sessions.SESSION_STARRED, cursor.getInt(SessionsQuery.STARRED));
             } else {
                 values.put(SyncColumns.UPDATED, ScheduleContract.UPDATED_NEVER);
             }
@@ -210,7 +216,7 @@ public class RemoteSessionsHandler extends XmlHandler {
     private interface SessionsQuery {
         String[] PROJECTION = {
                 SyncColumns.UPDATED,
-                Sessions.STARRED,
+                Sessions.SESSION_STARRED,
         };
 
         int UPDATED = 0;
@@ -221,44 +227,40 @@ public class RemoteSessionsHandler extends XmlHandler {
     private interface Columns {
         String SESSION_DATE = "sessiondate";
         String SESSION_TIME = "sessiontime";
-        String ROOM = "room";
-        String PRODUCT = "product";
-        String TRACK = "track";
-        String SESSION_TYPE = "sessiontype";
+        String SESSION_ROOM = "sessionroom";
+        String SESSION_TRACK = "sessiontrack";
+        String SESSION_LEVEL = "sessionlevel";
         String SESSION_TITLE = "sessiontitle";
-        String TAGS = "tags";
+        String SESSION_TAGS = "sessiontags";
+        String SESSION_HASHTAG = "sessionhashtag";
+        String SESSION_SLUG = "sessionslug";
         String SESSION_SPEAKERS = "sessionspeakers";
-        String SPEAKERS = "speakers";
         String SESSION_ABSTRACT = "sessionabstract";
         String SESSION_REQUIREMENTS = "sessionrequirements";
-        String SESSION_LINK = "sessionlink";
-        String SESSION_HASHTAG = "sessionhashtag";
-        String FULLLINK = "fulllink";
-        String YOUTUBELINK = "youtubelink";
-        String PDFLINK = "pdflink";
-
-        String MODERATORLINK = "moderatorlink";
-        String WAVELINK = "wavelink";
-        String WAVEID = "waveid";
+        String SESSION_URL = "sessionurl";
+        String SESSION_MODERATOR_URL = "sessionmoderatorurl";
+        String SESSION_YOUTUBE_URL = "sessionyoutubeurl";
+        String SESSION_PDF_URL = "sessionpdfurl";
+        String SESSION_FEEDBACK_URL = "sessionfeedbackurl";
+        String SESSION_NOTES_URL = "sessionnotesurl";
 
         // session_date: Wednesday May 19
         // session_time: 10:45am-11:45am
-        // room: 6
-        // product: App Engine
-        // track: Enterprise, App Engine
-        // session_type: 201
+        // session_room: 6
+        // session_track: Enterprise, App Engine
+        // session_level: 201
         // session_title: Run corporate applications on Google App Engine?  Yes we do.
-        // tags: Enterprise, SaaS, PaaS, Hosting, App Engine, Java
-        // session_speakers: Ben Fried
-        // speakers: bf
-        // session_abstract: And you can too!  Come hear Google's CIO Ben Fried describe
+        // session_slug: run-corporate-applications
+        // session_tags: Enterprise, SaaS, PaaS, Hosting, App Engine, Java
+        // session_speakers: Ben Fried, John Smith
+        // session_abstract: And you can too! Come hear Google's CIO Ben Fried describe...
         // session_requirements: None
-        // session_link: run-corp-apps-on-app-engine
-        // session_hashtag: #android1
-        // wavelink
-        // fulllink
-        // youtubelink
-        // pdflink
-
+        // session_url: http://www.google.com/events/io/2011/foo
+        // session_hashtag: #io11android1
+        // session_youtube_url
+        // session_pdf_url
+        // session_feedback_url
+        // session_moderator_url
+        // session_notes_url
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,14 +83,14 @@ public class SyncService extends IntentService {
     private static final int SECOND_IN_MILLIS = (int) DateUtils.SECOND_IN_MILLIS;
 
     /** Root worksheet feed for online data source */
-    private static final String WORKSHEETS_URL = "http://spreadsheets.google.com"
-            + "/feeds/worksheets/t0bDxnEqbFO4XuYpkA070Nw/public/basic";
+    // TODO: insert your sessions/speakers/vendors spreadsheet doc URL here.
+    private static final String WORKSHEETS_URL = "INSERT_SPREADSHEET_URL_HERE";
 
     private static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
     private static final String ENCODING_GZIP = "gzip";
 
     private static final int VERSION_NONE = 0;
-    private static final int VERSION_CURRENT = 5;
+    private static final int VERSION_CURRENT = 11;
 
     private LocalExecutor mLocalExecutor;
     private RemoteExecutor mRemoteExecutor;

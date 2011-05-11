@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.google.android.apps.iosched.provider;
 
 import com.google.android.apps.iosched.provider.ScheduleContract.Blocks;
 import com.google.android.apps.iosched.provider.ScheduleContract.BlocksColumns;
-import com.google.android.apps.iosched.provider.ScheduleContract.Notes;
-import com.google.android.apps.iosched.provider.ScheduleContract.NotesColumns;
 import com.google.android.apps.iosched.provider.ScheduleContract.Rooms;
 import com.google.android.apps.iosched.provider.ScheduleContract.RoomsColumns;
 import com.google.android.apps.iosched.provider.ScheduleContract.Sessions;
@@ -51,10 +49,11 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
     // NOTE: carefully update onUpgrade() when bumping database versions to make
     // sure user data is saved.
 
-    private static final int VER_LAUNCH = 18;
-    private static final int VER_SESSION_HASHTAG = 19;
+    private static final int VER_LAUNCH = 21;
+    private static final int VER_SESSION_FEEDBACK_URL = 22;
+    private static final int VER_SESSION_NOTES_URL_SLUG = 23;
 
-    private static final int DATABASE_VERSION = VER_SESSION_HASHTAG;
+    private static final int DATABASE_VERSION = VER_SESSION_NOTES_URL_SLUG;
 
     interface Tables {
         String BLOCKS = "blocks";
@@ -65,7 +64,6 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
         String SESSIONS_SPEAKERS = "sessions_speakers";
         String SESSIONS_TRACKS = "sessions_tracks";
         String VENDORS = "vendors";
-        String NOTES = "notes";
 
         String SESSIONS_SEARCH = "sessions_search";
         String VENDORS_SEARCH = "vendors_search";
@@ -109,6 +107,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
     private interface Triggers {
         String SESSIONS_SEARCH_INSERT = "sessions_search_insert";
         String SESSIONS_SEARCH_DELETE = "sessions_search_delete";
+        String SESSIONS_SEARCH_UPDATE = "sessions_search_update";
 
         String VENDORS_SEARCH_INSERT = "vendors_search_insert";
         String VENDORS_SEARCH_DELETE = "vendors_search_delete";
@@ -162,16 +161,18 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
          * Subquery used to build the {@link SessionsSearchColumns#BODY} string
          * used for indexing {@link Sessions} content.
          */
-        String SESSIONS_BODY = "(new." + Sessions.TITLE + "||'; '||new." + Sessions.ABSTRACT
-                + "||'; '||new." + Sessions.REQUIREMENTS + "||'; '||" + "new." + Sessions.KEYWORDS
+        String SESSIONS_BODY = "(new." + Sessions.SESSION_TITLE
+                + "||'; '||new." + Sessions.SESSION_ABSTRACT
+                + "||'; '||" + "coalesce(new." + Sessions.SESSION_KEYWORDS + ", '')"
                 + ")";
 
         /**
          * Subquery used to build the {@link VendorsSearchColumns#BODY} string
          * used for indexing {@link Vendors} content.
          */
-        String VENDORS_BODY = "(new." + Vendors.NAME + "||'; '||new." + Vendors.DESC
-                + "||'; '||new." + Vendors.PRODUCT_DESC + ")";
+        String VENDORS_BODY = "(new." + Vendors.VENDOR_NAME
+                + "||'; '||new." + Vendors.VENDOR_DESC
+                + "||'; '||new." + Vendors.VENDOR_PRODUCT_DESC + ")";
     }
 
     public ScheduleDatabase(Context context) {
@@ -210,15 +211,20 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + SessionsColumns.SESSION_ID + " TEXT NOT NULL,"
                 + Sessions.BLOCK_ID + " TEXT " + References.BLOCK_ID + ","
                 + Sessions.ROOM_ID + " TEXT " + References.ROOM_ID + ","
-                + SessionsColumns.TYPE + " TEXT,"
-                + SessionsColumns.TITLE + " TEXT,"
-                + SessionsColumns.ABSTRACT + " TEXT,"
-                + SessionsColumns.REQUIREMENTS + " TEXT,"
-                + SessionsColumns.MODERATOR_URL + " TEXT,"
-                + SessionsColumns.WAVE_URL + " TEXT,"
-                + SessionsColumns.KEYWORDS + " TEXT,"
-                + SessionsColumns.HASHTAG + " TEXT,"
-                + SessionsColumns.STARRED + " INTEGER NOT NULL DEFAULT 0,"
+                + SessionsColumns.SESSION_LEVEL + " TEXT,"
+                + SessionsColumns.SESSION_TITLE + " TEXT,"
+                + SessionsColumns.SESSION_ABSTRACT + " TEXT,"
+                + SessionsColumns.SESSION_REQUIREMENTS + " TEXT,"
+                + SessionsColumns.SESSION_KEYWORDS + " TEXT,"
+                + SessionsColumns.SESSION_HASHTAG + " TEXT,"
+                + SessionsColumns.SESSION_SLUG + " TEXT,"
+                + SessionsColumns.SESSION_URL + " TEXT,"
+                + SessionsColumns.SESSION_MODERATOR_URL + " TEXT,"
+                + SessionsColumns.SESSION_YOUTUBE_URL + " TEXT,"
+                + SessionsColumns.SESSION_PDF_URL + " TEXT,"
+                + SessionsColumns.SESSION_FEEDBACK_URL + " TEXT,"
+                + SessionsColumns.SESSION_NOTES_URL + " TEXT,"
+                + SessionsColumns.SESSION_STARRED + " INTEGER NOT NULL DEFAULT 0,"
                 + "UNIQUE (" + SessionsColumns.SESSION_ID + ") ON CONFLICT REPLACE)");
 
         db.execSQL("CREATE TABLE " + Tables.SPEAKERS + " ("
@@ -226,8 +232,10 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + SyncColumns.UPDATED + " INTEGER NOT NULL,"
                 + SpeakersColumns.SPEAKER_ID + " TEXT NOT NULL,"
                 + SpeakersColumns.SPEAKER_NAME + " TEXT,"
+                + SpeakersColumns.SPEAKER_IMAGE_URL + " TEXT,"
                 + SpeakersColumns.SPEAKER_COMPANY + " TEXT,"
                 + SpeakersColumns.SPEAKER_ABSTRACT + " TEXT,"
+                + SpeakersColumns.SPEAKER_URL+ " TEXT,"
                 + "UNIQUE (" + SpeakersColumns.SPEAKER_ID + ") ON CONFLICT REPLACE)");
 
         db.execSQL("CREATE TABLE " + Tables.SESSIONS_SPEAKERS + " ("
@@ -249,21 +257,14 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + SyncColumns.UPDATED + " INTEGER NOT NULL,"
                 + VendorsColumns.VENDOR_ID + " TEXT NOT NULL,"
                 + Vendors.TRACK_ID + " TEXT " + References.TRACK_ID + ","
-                + VendorsColumns.NAME + " TEXT,"
-                + VendorsColumns.LOCATION + " TEXT,"
-                + VendorsColumns.DESC + " TEXT,"
-                + VendorsColumns.URL + " TEXT,"
-                + VendorsColumns.PRODUCT_DESC + " TEXT,"
-                + VendorsColumns.LOGO_URL + " TEXT,"
-                + VendorsColumns.LOGO + " BLOB DEFAULT NULL,"
-                + VendorsColumns.STARRED + " INTEGER,"
+                + VendorsColumns.VENDOR_NAME + " TEXT,"
+                + VendorsColumns.VENDOR_LOCATION + " TEXT,"
+                + VendorsColumns.VENDOR_DESC + " TEXT,"
+                + VendorsColumns.VENDOR_URL + " TEXT,"
+                + VendorsColumns.VENDOR_PRODUCT_DESC + " TEXT,"
+                + VendorsColumns.VENDOR_LOGO_URL + " TEXT,"
+                + VendorsColumns.VENDOR_STARRED + " INTEGER,"
                 + "UNIQUE (" + VendorsColumns.VENDOR_ID + ") ON CONFLICT REPLACE)");
-
-        db.execSQL("CREATE TABLE " + Tables.NOTES + " ("
-                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + Notes.SESSION_ID + " TEXT NOT NULL " + References.SESSION_ID + ","
-                + NotesColumns.NOTE_TIME + " INTEGER NOT NULL,"
-                + NotesColumns.NOTE_CONTENT + " TEXT)");
 
         createSessionsSearch(db);
         createVendorsSearch(db);
@@ -302,6 +303,12 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + Tables.SESSIONS + " BEGIN DELETE FROM " + Tables.SESSIONS_SEARCH + " "
                 + " WHERE " + Qualified.SESSIONS_SEARCH_SESSION_ID + "=old." + Sessions.SESSION_ID
                 + ";" + " END;");
+
+        db.execSQL("CREATE TRIGGER " + Triggers.SESSIONS_SEARCH_UPDATE 
+                + " AFTER UPDATE ON " + Tables.SESSIONS
+                + " BEGIN UPDATE sessions_search SET " + SessionsSearchColumns.BODY  + " = "
+                + Subquery.SESSIONS_BODY + " WHERE session_id = old.session_id"
+                + "; END;");
 
     }
 
@@ -345,12 +352,21 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
         // future upgrade cases. Only use "break;" when you want to drop and
         // recreate the entire database.
         int version = oldVersion;
+
         switch (version) {
             case VER_LAUNCH:
-                // Version 19 added column for session hashtags.
+                // Version 22 added column for session feedback URL.
                 db.execSQL("ALTER TABLE " + Tables.SESSIONS + " ADD COLUMN "
-                        + SessionsColumns.HASHTAG + " TEXT");
-                version = VER_SESSION_HASHTAG;
+                        + SessionsColumns.SESSION_FEEDBACK_URL + " TEXT");
+                version = VER_SESSION_FEEDBACK_URL;
+
+            case VER_SESSION_FEEDBACK_URL:
+                // Version 23 added columns for session official notes URL and slug.
+                db.execSQL("ALTER TABLE " + Tables.SESSIONS + " ADD COLUMN "
+                        + SessionsColumns.SESSION_NOTES_URL + " TEXT");
+                db.execSQL("ALTER TABLE " + Tables.SESSIONS + " ADD COLUMN "
+                        + SessionsColumns.SESSION_SLUG + " TEXT");
+                version = VER_SESSION_NOTES_URL_SLUG;
         }
 
         Log.d(TAG, "after upgrade logic, at version " + version);
@@ -365,7 +381,6 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
             db.execSQL("DROP TABLE IF EXISTS " + Tables.SESSIONS_SPEAKERS);
             db.execSQL("DROP TABLE IF EXISTS " + Tables.SESSIONS_TRACKS);
             db.execSQL("DROP TABLE IF EXISTS " + Tables.VENDORS);
-            db.execSQL("DROP TABLE IF EXISTS " + Tables.NOTES);
 
             db.execSQL("DROP TRIGGER IF EXISTS " + Triggers.SESSIONS_SEARCH_INSERT);
             db.execSQL("DROP TRIGGER IF EXISTS " + Triggers.SESSIONS_SEARCH_DELETE);

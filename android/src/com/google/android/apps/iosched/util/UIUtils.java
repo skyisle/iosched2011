@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,52 +19,56 @@ package com.google.android.apps.iosched.util;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract.Blocks;
 import com.google.android.apps.iosched.provider.ScheduleContract.Rooms;
-import com.google.android.apps.iosched.ui.HomeActivity;
+import com.google.android.apps.iosched.ui.phone.MapActivity;
+import com.google.android.apps.iosched.ui.tablet.MapMultiPaneActivity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.LevelListDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Bundle;
+import android.os.Build;
+import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.Formatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * An assortment of UI helpers.
+ */
 public class UIUtils {
-
     /**
      * Time zone to use when formatting all session times. To always use the
      * phone local time, use {@link TimeZone#getDefault()}.
      */
-    public static TimeZone CONFERENCE_TIME_ZONE = TimeZone.getTimeZone("America/Los_Angeles");
+    public static final TimeZone CONFERENCE_TIME_ZONE = TimeZone.getTimeZone("America/Los_Angeles");
 
     public static final long CONFERENCE_START_MILLIS = ParserUtils.parseTime(
-            "2010-05-19T09:00:00.000-07:00");
+            "2011-05-10T09:00:00.000-07:00");
     public static final long CONFERENCE_END_MILLIS = ParserUtils.parseTime(
-            "2010-05-20T17:30:00.000-07:00");
+            "2011-05-11T17:30:00.000-07:00");
 
-    public static final Uri CONFERENCE_URL = Uri.parse("http://code.google.com/events/io/2010/");
+    public static final Uri CONFERENCE_URL = Uri.parse("http://www.google.com/events/io/2011/");
 
     /** Flags used with {@link DateUtils#formatDateRange}. */
     private static final int TIME_FLAGS = DateUtils.FORMAT_SHOW_TIME
             | DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_ABBREV_WEEKDAY;
-
-    private static final int BRIGHTNESS_THRESHOLD = 150;
 
     /** {@link StringBuilder} used for formatting time block. */
     private static StringBuilder sBuilder = new StringBuilder(50);
@@ -72,60 +76,6 @@ public class UIUtils {
     private static Formatter sFormatter = new Formatter(sBuilder, Locale.getDefault());
 
     private static StyleSpan sBoldSpan = new StyleSpan(Typeface.BOLD);
-
-    public static void setTitleBarColor(View titleBarView, int color) {
-        final ViewGroup titleBar = (ViewGroup) titleBarView;
-        titleBar.setBackgroundColor(color);
-
-        /*
-         * Calculate the brightness of the titlebar color, based on the commonly known
-         * brightness formula:
-         *
-         * http://en.wikipedia.org/wiki/HSV_color_space%23Lightness
-         */
-        int brColor = (30 * Color.red(color) +
-                       59 * Color.green(color) +
-                       11 * Color.blue(color)) / 100;
-        if (brColor > BRIGHTNESS_THRESHOLD) {
-            ((TextView) titleBar.findViewById(R.id.title_text)).setTextColor(
-                    titleBar.getContext().getResources().getColor(R.color.title_text_alt));
-
-            // Iterate through all children of the titlebar and if they're a LevelListDrawable,
-            // set their level to 1 (alternate).
-            // TODO: find a less hacky way of doing this.
-            titleBar.post(new Runnable() {
-                public void run() {
-                    final int childCount = titleBar.getChildCount();
-                    for (int i = 0; i < childCount; i++) {
-                        final View child = titleBar.getChildAt(i);
-                        if (child instanceof ImageButton) {
-                            final ImageButton childButton = (ImageButton) child;
-                            if (childButton.getDrawable() != null &&
-                                childButton.getDrawable() instanceof LevelListDrawable) {
-                                ((LevelListDrawable) childButton.getDrawable()).setLevel(1);
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    /**
-     * Invoke "home" action, returning to {@link HomeActivity}.
-     */
-    public static void goHome(Context context) {
-        final Intent intent = new Intent(context, HomeActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        context.startActivity(intent);
-    }
-
-    /**
-     * Invoke "search" action, triggering a default search.
-     */
-    public static void goSearch(Activity activity) {
-        activity.startSearch(null, false, Bundle.EMPTY, false);
-    }
 
     /**
      * Format and return the given {@link Blocks} and {@link Rooms} values using
@@ -149,6 +99,10 @@ public class UIUtils {
      * {@link TextView#setMovementMethod} so inline links are handled.
      */
     public static void setTextMaybeHtml(TextView view, String text) {
+        if (TextUtils.isEmpty(text)) {
+            view.setText("");
+            return;
+        }
         if (text.contains("<") && text.contains(">")) {
             view.setText(Html.fromHtml(text));
             view.setMovementMethod(LinkMovementMethod.getInstance());
@@ -160,12 +114,12 @@ public class UIUtils {
     public static void setSessionTitleColor(long blockStart, long blockEnd, TextView title,
             TextView subtitle) {
         long currentTimeMillis = System.currentTimeMillis();
-        int colorId = android.R.color.primary_text_light;
-        int subColorId = android.R.color.secondary_text_light;
+        int colorId = R.color.body_text_1;
+        int subColorId = R.color.body_text_2;
 
         if (currentTimeMillis > blockEnd &&
                 currentTimeMillis < CONFERENCE_END_MILLIS) {
-            colorId = subColorId = R.color.session_foreground_past;
+            colorId = subColorId = R.color.body_text_disabled;
         }
 
         final Resources res = title.getResources();
@@ -197,5 +151,67 @@ public class UIUtils {
         }
 
         return builder;
+    }
+
+    public static String getLastUsedTrackID(Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getString("last_track_id", null);
+    }
+
+    public static void setLastUsedTrackID(Context context, String trackID) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        sp.edit().putString("last_track_id", trackID).commit();
+    }
+
+    private static final int BRIGHTNESS_THRESHOLD = 130;
+
+    /**
+     * Calculate whether a color is light or dark, based on a commonly known
+     * brightness formula.
+     *
+     * @see {@literal http://en.wikipedia.org/wiki/HSV_color_space%23Lightness}
+     */
+    public static boolean isColorDark(int color) {
+        return ((30 * Color.red(color) +
+                59 * Color.green(color) +
+                11 * Color.blue(color)) / 100) <= BRIGHTNESS_THRESHOLD;
+    }
+
+    public static boolean isHoneycomb() {
+        // Can use static final constants like HONEYCOMB, declared in later versions
+        // of the OS since they are inlined at compile time. This is guaranteed behavior.
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
+    }
+
+    public static boolean isHoneycombTablet(Context context) {
+        // Can use static final constants like HONEYCOMB, declared in later versions
+        // of the OS since they are inlined at compile time. This is guaranteed behavior.
+        return isHoneycomb() && (context.getResources().getConfiguration().screenLayout
+                & Configuration.SCREENLAYOUT_SIZE_MASK)
+                == Configuration.SCREENLAYOUT_SIZE_XLARGE;
+    }
+
+    public static long getCurrentTime(final Context context) {
+        //SharedPreferences prefs = context.getSharedPreferences("mock_data", 0);
+        //prefs.edit().commit();
+        //return prefs.getLong("mock_current_time", System.currentTimeMillis());
+        return System.currentTimeMillis();
+    }
+
+    public static Drawable getIconForIntent(final Context context, Intent i) {
+        PackageManager pm = context.getPackageManager();
+        List<ResolveInfo> infos = pm.queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
+        if (infos.size() > 0) {
+            return infos.get(0).loadIcon(pm);
+        }
+        return null;
+    }
+
+    public static Class getMapActivityClass(Context context) {
+        if (UIUtils.isHoneycombTablet(context)) {
+            return MapMultiPaneActivity.class;
+        }
+
+        return MapActivity.class;
     }
 }

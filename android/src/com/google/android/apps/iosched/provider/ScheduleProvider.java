@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.google.android.apps.iosched.provider;
 
 import com.google.android.apps.iosched.provider.ScheduleContract.Blocks;
-import com.google.android.apps.iosched.provider.ScheduleContract.Notes;
 import com.google.android.apps.iosched.provider.ScheduleContract.Rooms;
 import com.google.android.apps.iosched.provider.ScheduleContract.SearchSuggest;
 import com.google.android.apps.iosched.provider.ScheduleContract.Sessions;
@@ -30,7 +29,6 @@ import com.google.android.apps.iosched.provider.ScheduleDatabase.SessionsTracks;
 import com.google.android.apps.iosched.provider.ScheduleDatabase.Tables;
 import com.google.android.apps.iosched.provider.ScheduleDatabase.VendorsSearchColumns;
 import com.google.android.apps.iosched.service.SyncService;
-import com.google.android.apps.iosched.util.NotesExporter;
 import com.google.android.apps.iosched.util.SelectionBuilder;
 
 import android.app.Activity;
@@ -38,23 +36,18 @@ import android.app.SearchManager;
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.BaseColumns;
-import android.provider.OpenableColumns;
 import android.util.Log;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,7 +85,6 @@ public class ScheduleProvider extends ContentProvider {
     private static final int SESSIONS_ID = 404;
     private static final int SESSIONS_ID_SPEAKERS = 405;
     private static final int SESSIONS_ID_TRACKS = 406;
-    private static final int SESSIONS_ID_NOTES = 407;
 
     private static final int SPEAKERS = 500;
     private static final int SPEAKERS_ID = 501;
@@ -102,10 +94,6 @@ public class ScheduleProvider extends ContentProvider {
     private static final int VENDORS_STARRED = 601;
     private static final int VENDORS_SEARCH = 603;
     private static final int VENDORS_ID = 604;
-
-    private static final int NOTES = 700;
-    private static final int NOTES_EXPORT = 701;
-    private static final int NOTES_ID = 702;
 
     private static final int SEARCH_SUGGEST = 800;
 
@@ -140,7 +128,6 @@ public class ScheduleProvider extends ContentProvider {
         matcher.addURI(authority, "sessions/*", SESSIONS_ID);
         matcher.addURI(authority, "sessions/*/speakers", SESSIONS_ID_SPEAKERS);
         matcher.addURI(authority, "sessions/*/tracks", SESSIONS_ID_TRACKS);
-        matcher.addURI(authority, "sessions/*/notes", SESSIONS_ID_NOTES);
 
         matcher.addURI(authority, "speakers", SPEAKERS);
         matcher.addURI(authority, "speakers/*", SPEAKERS_ID);
@@ -150,10 +137,6 @@ public class ScheduleProvider extends ContentProvider {
         matcher.addURI(authority, "vendors/starred", VENDORS_STARRED);
         matcher.addURI(authority, "vendors/search/*", VENDORS_SEARCH);
         matcher.addURI(authority, "vendors/*", VENDORS_ID);
-
-        matcher.addURI(authority, "notes", NOTES);
-        matcher.addURI(authority, "notes/export", NOTES_EXPORT);
-        matcher.addURI(authority, "notes/*", NOTES_ID);
 
         matcher.addURI(authority, "search_suggest_query", SEARCH_SUGGEST);
 
@@ -208,8 +191,6 @@ public class ScheduleProvider extends ContentProvider {
                 return Speakers.CONTENT_TYPE;
             case SESSIONS_ID_TRACKS:
                 return Tracks.CONTENT_TYPE;
-            case SESSIONS_ID_NOTES:
-                return Notes.CONTENT_TYPE;
             case SPEAKERS:
                 return Speakers.CONTENT_TYPE;
             case SPEAKERS_ID:
@@ -224,12 +205,6 @@ public class ScheduleProvider extends ContentProvider {
                 return Vendors.CONTENT_TYPE;
             case VENDORS_ID:
                 return Vendors.CONTENT_ITEM_TYPE;
-            case NOTES:
-                return Notes.CONTENT_TYPE;
-            case NOTES_EXPORT:
-                return MIME_XML;
-            case NOTES_ID:
-                return Notes.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -248,13 +223,6 @@ public class ScheduleProvider extends ContentProvider {
                 // Most cases are handled with simple SelectionBuilder
                 final SelectionBuilder builder = buildExpandedSelection(uri, match);
                 return builder.where(selection, selectionArgs).query(db, projection, sortOrder);
-            }
-            case NOTES_EXPORT: {
-                // Provide query values for file attachments
-                final String[] columns = { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE };
-                final MatrixCursor cursor = new MatrixCursor(columns, 1);
-                cursor.addRow(new String[] { "notes.xml", null });
-                return cursor;
             }
             case SEARCH_SUGGEST: {
                 final SelectionBuilder builder = new SelectionBuilder();
@@ -284,48 +252,47 @@ public class ScheduleProvider extends ContentProvider {
         switch (match) {
             case BLOCKS: {
                 db.insertOrThrow(Tables.BLOCKS, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return Blocks.buildBlockUri(values.getAsString(Blocks.BLOCK_ID));
             }
             case TRACKS: {
                 db.insertOrThrow(Tables.TRACKS, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return Tracks.buildTrackUri(values.getAsString(Tracks.TRACK_ID));
             }
             case ROOMS: {
                 db.insertOrThrow(Tables.ROOMS, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return Rooms.buildRoomUri(values.getAsString(Rooms.ROOM_ID));
             }
             case SESSIONS: {
                 db.insertOrThrow(Tables.SESSIONS, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return Sessions.buildSessionUri(values.getAsString(Sessions.SESSION_ID));
             }
             case SESSIONS_ID_SPEAKERS: {
                 db.insertOrThrow(Tables.SESSIONS_SPEAKERS, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return Speakers.buildSpeakerUri(values.getAsString(SessionsSpeakers.SPEAKER_ID));
             }
             case SESSIONS_ID_TRACKS: {
                 db.insertOrThrow(Tables.SESSIONS_TRACKS, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return Tracks.buildTrackUri(values.getAsString(SessionsTracks.TRACK_ID));
-            }
-            case SESSIONS_ID_NOTES: {
-                final String sessionId = Sessions.getSessionId(uri);
-                values.put(Notes.SESSION_ID, sessionId);
-                final long noteId = db.insertOrThrow(Tables.NOTES, null, values);
-                return ContentUris.withAppendedId(Notes.CONTENT_URI, noteId);
             }
             case SPEAKERS: {
                 db.insertOrThrow(Tables.SPEAKERS, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return Speakers.buildSpeakerUri(values.getAsString(Speakers.SPEAKER_ID));
             }
             case VENDORS: {
                 db.insertOrThrow(Tables.VENDORS, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return Vendors.buildVendorUri(values.getAsString(Vendors.VENDOR_ID));
-            }
-            case NOTES: {
-                final long noteId = db.insertOrThrow(Tables.NOTES, null, values);
-                return ContentUris.withAppendedId(Notes.CONTENT_URI, noteId);
             }
             case SEARCH_SUGGEST: {
                 db.insertOrThrow(Tables.SEARCH_SUGGEST, null, values);
+                getContext().getContentResolver().notifyChange(uri, null);
                 return SearchSuggest.CONTENT_URI;
             }
             default: {
@@ -340,7 +307,9 @@ public class ScheduleProvider extends ContentProvider {
         if (LOGV) Log.v(TAG, "update(uri=" + uri + ", values=" + values.toString() + ")");
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final SelectionBuilder builder = buildSimpleSelection(uri);
-        return builder.where(selection, selectionArgs).update(db, values);
+        int retVal = builder.where(selection, selectionArgs).update(db, values);
+        getContext().getContentResolver().notifyChange(uri, null);
+        return retVal;
     }
 
     /** {@inheritDoc} */
@@ -349,7 +318,9 @@ public class ScheduleProvider extends ContentProvider {
         if (LOGV) Log.v(TAG, "delete(uri=" + uri + ")");
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final SelectionBuilder builder = buildSimpleSelection(uri);
-        return builder.where(selection, selectionArgs).delete(db);
+        int retVal = builder.where(selection, selectionArgs).delete(db);
+        getContext().getContentResolver().notifyChange(uri, null);
+        return retVal;
     }
 
     /**
@@ -441,14 +412,6 @@ public class ScheduleProvider extends ContentProvider {
                 final String vendorId = Vendors.getVendorId(uri);
                 return builder.table(Tables.VENDORS)
                         .where(Vendors.VENDOR_ID + "=?", vendorId);
-            }
-            case NOTES: {
-                return builder.table(Tables.NOTES);
-            }
-            case NOTES_ID: {
-                final String noteId = uri.getPathSegments().get(1);
-                return builder.table(Tables.NOTES)
-                        .where(Notes._ID + "=?", noteId);
             }
             case SEARCH_SUGGEST: {
                 return builder.table(Tables.SEARCH_SUGGEST);
@@ -551,7 +514,7 @@ public class ScheduleProvider extends ContentProvider {
                         .mapToTable(Sessions._ID, Tables.SESSIONS)
                         .mapToTable(Sessions.BLOCK_ID, Tables.SESSIONS)
                         .mapToTable(Sessions.ROOM_ID, Tables.SESSIONS)
-                        .where(Sessions.STARRED + "=1");
+                        .where(Sessions.SESSION_STARRED + "=1");
             }
             case SESSIONS_SEARCH: {
                 final String query = Sessions.getSearchQuery(uri);
@@ -595,11 +558,6 @@ public class ScheduleProvider extends ContentProvider {
                         .mapToTable(Tracks.TRACK_ID, Tables.TRACKS)
                         .where(Qualified.SESSIONS_TRACKS_SESSION_ID + "=?", sessionId);
             }
-            case SESSIONS_ID_NOTES: {
-                final String sessionId = Sessions.getSessionId(uri);
-                return builder.table(Tables.NOTES)
-                        .where(Notes.SESSION_ID + "=?", sessionId);
-            }
             case SPEAKERS: {
                 return builder.table(Tables.SPEAKERS);
             }
@@ -626,7 +584,7 @@ public class ScheduleProvider extends ContentProvider {
                 return builder.table(Tables.VENDORS_JOIN_TRACKS)
                         .mapToTable(Vendors._ID, Tables.VENDORS)
                         .mapToTable(Vendors.TRACK_ID, Tables.VENDORS)
-                        .where(Vendors.STARRED + "=1");
+                        .where(Vendors.VENDOR_STARRED + "=1");
             }
             case VENDORS_SEARCH: {
                 final String query = Vendors.getSearchQuery(uri);
@@ -644,14 +602,6 @@ public class ScheduleProvider extends ContentProvider {
                         .mapToTable(Vendors.TRACK_ID, Tables.VENDORS)
                         .where(Vendors.VENDOR_ID + "=?", vendorId);
             }
-            case NOTES: {
-                return builder.table(Tables.NOTES);
-            }
-            case NOTES_ID: {
-                final long noteId = Notes.getNoteId(uri);
-                return builder.table(Tables.NOTES)
-                        .where(Notes._ID + "=?", Long.toString(noteId));
-            }
             default: {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
             }
@@ -662,15 +612,6 @@ public class ScheduleProvider extends ContentProvider {
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            case NOTES_EXPORT: {
-                try {
-                    final File notesFile = NotesExporter.writeExportedNotes(getContext());
-                    return ParcelFileDescriptor
-                            .open(notesFile, ParcelFileDescriptor.MODE_READ_ONLY);
-                } catch (IOException e) {
-                    throw new FileNotFoundException("Unable to export notes: " + e.toString());
-                }
-            }
             default: {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
             }
@@ -721,7 +662,7 @@ public class ScheduleProvider extends ContentProvider {
         String VENDORS_TRACK_ID = Tables.VENDORS + "." + Vendors.TRACK_ID;
 
         @SuppressWarnings("hiding")
-        String SESSIONS_STARRED = Tables.SESSIONS + "." + Sessions.STARRED;
+        String SESSIONS_STARRED = Tables.SESSIONS + "." + Sessions.SESSION_STARRED;
 
         String TRACKS_TRACK_ID = Tables.TRACKS + "." + Tracks.TRACK_ID;
         String BLOCKS_BLOCK_ID = Tables.BLOCKS + "." + Blocks.BLOCK_ID;

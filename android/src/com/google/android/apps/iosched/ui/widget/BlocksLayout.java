@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.google.android.apps.iosched.ui.widget;
 
 import com.google.android.apps.iosched.R;
+import com.google.android.apps.iosched.util.UIUtils;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -56,16 +57,16 @@ public class BlocksLayout extends ViewGroup {
 
     private void ensureChildren() {
         mRulerView = (TimeRulerView) findViewById(R.id.blocks_ruler);
-        mRulerView.setDrawingCacheEnabled(true);
         if (mRulerView == null) {
             throw new IllegalStateException("Must include a R.id.blocks_ruler view.");
         }
+        mRulerView.setDrawingCacheEnabled(true);
 
         mNowView = findViewById(R.id.blocks_now);
-        mNowView.setDrawingCacheEnabled(true);
         if (mNowView == null) {
             throw new IllegalStateException("Must include a R.id.blocks_now view.");
         }
+        mNowView.setDrawingCacheEnabled(true);
     }
 
     /**
@@ -125,7 +126,7 @@ public class BlocksLayout extends ViewGroup {
 
         // Align now view to match current time
         final View nowView = mNowView;
-        final long now = System.currentTimeMillis();
+        final long now = UIUtils.getCurrentTime(getContext());
 
         final int top = rulerView.getTimeVerticalOffset(now);
         final int bottom = top + nowView.getMeasuredHeight();

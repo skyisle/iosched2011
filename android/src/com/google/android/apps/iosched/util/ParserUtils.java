@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,11 @@ public class ParserUtils {
     public static final String BLOCK_TYPE_SESSION = "session";
     public static final String BLOCK_TYPE_OFFICE_HOURS = "officehours";
 
+    // TODO: factor this out into a separate data file.
     public static final Set<String> LOCAL_TRACK_IDS = Sets.newHashSet(
-            "android", "appengine", "chrome", "enterprise", "firesidechats", "geo",
-            "googleapis", "googlewebtoolkit", "socialweb", "techtalks", "wave");
+            "accessibility", "android", "appengine", "chrome", "commerce", "developertools",
+            "gamedevelopment", "geo", "googleapis", "googleapps", "googletv", "techtalk",
+            "webgames", "youtube");
 
     /** Used to sanitize a string to be {@link Uri} safe. */
     private static final Pattern sSanitizePattern = Pattern.compile("[^a-z0-9-_]");
@@ -184,11 +186,11 @@ public class ParserUtils {
      * through, but returning a different value when a local alias is defined.
      */
     public static String translateTrackIdAlias(String trackId) {
-        if ("gwt".equals(trackId)) {
-            return "googlewebtoolkit";
-        } else {
-            return trackId;
-        }
+        //if ("gwt".equals(trackId)) {
+        //    return "googlewebtoolkit";
+        //} else {
+        return trackId;
+        //}
     }
 
     /**
@@ -196,11 +198,11 @@ public class ParserUtils {
      * this usually is a pass-through.
      */
     public static String translateTrackIdAliasInverse(String trackId) {
-        if ("googlewebtoolkit".equals(trackId)) {
-            return "gwt";
-        } else {
-            return trackId;
-        }
+        //if ("googlewebtoolkit".equals(trackId)) {
+        //    return "gwt";
+        //} else {
+        return trackId;
+        //}
     }
 
     /** XML tag constants used by the Atom standard. */

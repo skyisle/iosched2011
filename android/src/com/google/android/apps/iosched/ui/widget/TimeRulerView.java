@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.graphics.Paint.FontMetricsInt;
 import android.graphics.Paint.Style;
+import android.graphics.Typeface;
 import android.text.format.Time;
 import android.util.AttributeSet;
 import android.view.View;
@@ -124,7 +124,7 @@ public class TimeRulerView extends View {
 
         final FontMetricsInt metrics = labelPaint.getFontMetricsInt();
         final int labelHeight = Math.abs(metrics.ascent);
-        final int labelOffset = labelHeight + ((hourHeight - labelHeight) / 2);
+        final int labelOffset = labelHeight + mLabelPaddingLeft;
 
         final int right = getRight();
 
