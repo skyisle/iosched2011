@@ -159,8 +159,8 @@ public class DashboardLayout extends ViewGroup {
             row = visibleIndex / cols;
             col = visibleIndex % cols;
 
-            left = l + hSpace * (col + 1) + width * col;
-            top = t + vSpace * (row + 1) + height * row;
+            left = hSpace * (col + 1) + width * col;
+            top = vSpace * (row + 1) + height * row;
 
             child.layout(left, top,
                     (hSpace == 0 && col == cols - 1) ? r : (left + width),
