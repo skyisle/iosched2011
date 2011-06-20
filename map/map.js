@@ -480,27 +480,27 @@ IoMap.prototype.createContentMarker_ = function(item) {
     case 'info':
     case 'media':
       var image = new google.maps.MarkerImage(
-          'map/marker-' + item.icon + '.png',
+          'marker-' + item.icon + '.png',
           new google.maps.Size(30, 28),
           new google.maps.Point(0, 0),
           new google.maps.Point(13, 26));
 
       var shadow = new google.maps.MarkerImage(
-          'map/marker-shadow.png',
+          'marker-shadow.png',
           new google.maps.Size(30, 28),
           new google.maps.Point(0,0),
           new google.maps.Point(13, 26));
       break;
     case 'toilets':
       var image = new google.maps.MarkerImage(
-          'map/' + item.icon + '.png',
+          item.icon + '.png',
           new google.maps.Size(35, 35),
           new google.maps.Point(0, 0),
           new google.maps.Point(17, 17));
       break;
     case 'elevator':
       var image = new google.maps.MarkerImage(
-          'map/' + item.icon + '.png',
+          item.icon + '.png',
           new google.maps.Size(48, 26),
           new google.maps.Point(0, 0),
           new google.maps.Point(24, 13));
