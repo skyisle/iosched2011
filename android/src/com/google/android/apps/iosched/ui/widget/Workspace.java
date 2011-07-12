@@ -702,6 +702,8 @@ public class Workspace extends ViewGroup {
                     } else {
                         snapToDestination();
                     }
+                } else {
+                    performClick();
                 }
                 mTouchState = TOUCH_STATE_REST;
                 mActivePointerId = INVALID_POINTER;
