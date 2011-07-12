@@ -65,9 +65,15 @@ public class ActivityHelperHoneycomb extends ActivityHelper {
         super.setupHomeActivity();
         // NOTE: there needs to be a content view set before this is called, so this method
         // should be called in onPostCreate.
-        mActivity.getActionBar().setDisplayOptions(
-                0,
-                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+        if (UIUtils.isTablet(mActivity)) {
+            mActivity.getActionBar().setDisplayOptions(
+                    0,
+                    ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+        } else {
+            mActivity.getActionBar().setDisplayOptions(
+                    ActionBar.DISPLAY_USE_LOGO,
+                    ActionBar.DISPLAY_USE_LOGO | ActionBar.DISPLAY_SHOW_TITLE);
+        }
     }
 
     /** {@inheritDoc} */
@@ -76,9 +82,15 @@ public class ActivityHelperHoneycomb extends ActivityHelper {
         super.setupSubActivity();
         // NOTE: there needs to be a content view set before this is called, so this method
         // should be called in onPostCreate.
-        mActivity.getActionBar().setDisplayOptions(
-                ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO,
-                ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO);
+        if (UIUtils.isTablet(mActivity)) {
+            mActivity.getActionBar().setDisplayOptions(
+                    ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO,
+                    ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO);
+        } else {
+            mActivity.getActionBar().setDisplayOptions(
+                    0,
+                    ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO);
+        }
     }
 
     /**
@@ -93,6 +105,9 @@ public class ActivityHelperHoneycomb extends ActivityHelper {
      */
     @Override
     public void setActionBarColor(int color) {
+        if (!UIUtils.isTablet(mActivity)) {
+            super.setActionBarColor(color);
+        }
     }
 
     /** {@inheritDoc} */

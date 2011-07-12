@@ -122,7 +122,10 @@ public class ActivityHelper {
         final Intent intent = new Intent(mActivity, HomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mActivity.startActivity(intent);
-        mActivity.overridePendingTransition(R.anim.home_enter, R.anim.home_exit);
+
+        if (!UIUtils.isHoneycomb()) {
+            mActivity.overridePendingTransition(R.anim.home_enter, R.anim.home_exit);
+        }
     }
 
     /**

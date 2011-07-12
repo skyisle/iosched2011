@@ -15,28 +15,9 @@
   -->
 
 <resources>
-    <!-- Start with the Holographic Light theme -->
-    <style name="Theme.IOSched" parent="android:style/Theme.Holo.Light">
-        <item name="android:windowBackground">@drawable/window_background</item>
-        <item name="android:actionBarStyle">@style/ActionBar</item>
-        <item name="textHeaderMaxLines">3</item>
-        <item name="trackAbstractMaxLines">6</item>
-    </style>
-
     <style name="Theme.IOSched.Home" parent="style/Theme.IOSched">
         <item name="android:windowBackground">@drawable/window_background_home</item>
         <item name="android:actionBarStyle">@null</item>
-    </style>
-
-    <style name="ActionBar" parent="android:style/Widget.Holo.Light.ActionBar">
-        <item name="android:background">@color/actionbar_background</item>
-        <item name="android:textColor">@color/accent_1</item>
-        <item name="android:titleTextStyle">@style/ActionBarText</item>
-    </style>
-
-    <style name="ActionBarText" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
-        <item name="android:textColor">@color/accent_1</item>
-        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="ListItemContainerBase">
