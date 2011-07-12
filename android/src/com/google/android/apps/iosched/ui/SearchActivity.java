@@ -86,6 +86,7 @@ public class SearchActivity extends BaseMultiPaneActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
+        setIntent(intent);
         mQuery = intent.getStringExtra(SearchManager.QUERY);
 
         final CharSequence title = getString(R.string.title_search_query, mQuery);
@@ -117,6 +118,8 @@ public class SearchActivity extends BaseMultiPaneActivity {
             fm.beginTransaction()
                     .add(R.id.fragment_sessions, mSessionsFragment, "sessions")
                     .commit();
+        } else {
+            mSessionsFragment.reloadFromArguments(getSessionsFragmentArguments());
         }
 
         // Sessions content comes from reused activity
@@ -145,6 +148,8 @@ public class SearchActivity extends BaseMultiPaneActivity {
             fm.beginTransaction()
                     .add(R.id.fragment_vendors, mVendorsFragment, "vendors")
                     .commit();
+        } else {
+            mVendorsFragment.reloadFromArguments(getVendorsFragmentArguments());
         }
 
         // Vendors content comes from reused activity
