@@ -157,6 +157,13 @@ public class SessionsFragment extends ListFragment implements
      * Handle {@link SessionsQuery} {@link Cursor}.
      */
     private void onSessionOrSearchQueryComplete(Cursor cursor) {
+        if (mCursor != null) {
+            // In case cancelOperation() doesn't work and we end up with consecutive calls to this
+            // callback.
+            getActivity().stopManagingCursor(mCursor);
+            mCursor = null;
+        }
+
         mCursor = cursor;
         getActivity().startManagingCursor(mCursor);
         mAdapter.changeCursor(mCursor);

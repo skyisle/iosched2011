@@ -150,6 +150,13 @@ public class VendorsFragment extends ListFragment implements
      * Handle {@link VendorsQuery} {@link Cursor}.
      */
     private void onVendorsOrSearchQueryComplete(Cursor cursor) {
+        if (mCursor != null) {
+            // In case cancelOperation() doesn't work and we end up with consecutive calls to this
+            // callback.
+            getActivity().stopManagingCursor(mCursor);
+            mCursor = null;
+        }
+
         // TODO(romannurik): stopManagingCursor on detach (throughout app)
         mCursor = cursor;
         getActivity().startManagingCursor(mCursor);
