@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/**
+ * ATTENTION: Consider using the 'ViewPager' widget, available in the
+ * Android Compatibility Package, r3:
+ *
+ *   http://developer.android.com/sdk/compatibility-library.html
+ */
+
 package com.google.android.apps.iosched.ui.widget;
 
 import com.google.android.apps.iosched.util.MotionEventUtils;
@@ -41,6 +48,10 @@ import java.util.ArrayList;
  * A {@link android.view.ViewGroup} that shows one child at a time, allowing the user to swipe
  * horizontally to page between other child views. Based on <code>Workspace.java</code> in the
  * <code>Launcher.git</code> AOSP project.
+ *
+ * An improved version of this UI widget named 'ViewPager' is now available in the
+ * <a href="http://developer.android.com/sdk/compatibility-library.html">Android Compatibility
+ * Package, r3</a>.
  */
 public class Workspace extends ViewGroup {
     private static final String TAG = "Workspace";
