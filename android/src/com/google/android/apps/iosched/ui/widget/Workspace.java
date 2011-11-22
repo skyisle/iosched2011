@@ -536,7 +536,7 @@ public class Workspace extends ViewGroup {
                 mTouchState = TOUCH_STATE_REST;
                 mAllowLongPress = false;
                 mActivePointerId = INVALID_POINTER;
-                if (mVelocityTracker == null) {
+                if (mVelocityTracker != null) {
                     mVelocityTracker.recycle();
                     mVelocityTracker = null;
                 }
