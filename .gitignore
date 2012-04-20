@@ -1,0 +1,13 @@
+.DS_Store
+local.properties
+*.idea
+*.iml
+*.ipr
+*.iws
+.idea
+bin/
+gen/
+out/
+_sandbox
+.classpath
+.project
