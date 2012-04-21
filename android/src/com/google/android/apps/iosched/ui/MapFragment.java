@@ -16,6 +16,10 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.provider.ScheduleContract.Rooms;
@@ -26,12 +30,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
@@ -42,7 +42,7 @@ import android.widget.Toast;
 /**
  * Shows a {@link WebView} with a map of the conference venue.
  */
-public class MapFragment extends Fragment {
+public class MapFragment extends SherlockFragment {
     private static final String TAG = "MapFragment";
 
     /**

@@ -16,28 +16,28 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.util.ActivityHelper;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 
 /**
  * A base activity that defers common functionality across app activities to an
  * {@link ActivityHelper}. This class shouldn't be used directly; instead, activities should
  * inherit from {@link BaseSinglePaneActivity} or {@link BaseMultiPaneActivity}.
  */
-public abstract class BaseActivity extends FragmentActivity {
+public abstract class BaseActivity extends SherlockFragmentActivity {
     final ActivityHelper mActivityHelper = ActivityHelper.createInstance(this);
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mActivityHelper.onPostCreate(savedInstanceState);
     }
 
     @Override

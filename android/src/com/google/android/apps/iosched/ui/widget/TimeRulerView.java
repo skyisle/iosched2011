@@ -66,7 +66,7 @@ public class TimeRulerView extends View {
                 mHeaderWidth);
         mHourHeight = a
                 .getDimensionPixelSize(R.styleable.TimeRulerView_hourHeight, mHourHeight);
-        mHorizontalDivider = a.getBoolean(R.styleable.TimeRulerView_horizontalDivider,
+        mHorizontalDivider = a.getBoolean(R.styleable.TimeRulerView_horizontalDivider1,
                 mHorizontalDivider);
         mLabelTextSize = a.getDimensionPixelSize(R.styleable.TimeRulerView_labelTextSize,
                 mLabelTextSize);

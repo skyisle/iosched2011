@@ -16,6 +16,9 @@
 
 package com.google.android.apps.iosched.ui;
 
+import static com.google.android.apps.iosched.util.UIUtils.buildStyledSnippet;
+
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.util.ActivityHelper;
@@ -39,12 +42,10 @@ import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import static com.google.android.apps.iosched.util.UIUtils.buildStyledSnippet;
-
 /**
  * A {@link ListFragment} showing a list of sandbox comapnies.
  */
-public class VendorsFragment extends ListFragment implements
+public class VendorsFragment extends SherlockListFragment implements
         NotifyingAsyncQueryHandler.AsyncQueryListener {
 
     private static final String STATE_CHECKED_POSITION = "checkedPosition";

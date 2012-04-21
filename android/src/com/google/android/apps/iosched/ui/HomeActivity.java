@@ -16,6 +16,8 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.service.SyncService;
 import com.google.android.apps.iosched.util.AnalyticsUtils;
@@ -28,8 +30,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 /**
@@ -82,7 +82,7 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.refresh_menu_items, menu);
+        getSupportMenuInflater().inflate(R.menu.refresh_menu_items, menu);
         super.onCreateOptionsMenu(menu);
         return true;
     }

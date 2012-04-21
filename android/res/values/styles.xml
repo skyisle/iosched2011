@@ -19,7 +19,7 @@
     <style name="Theme" parent="android:style/Theme" />
 
     <!-- Variation on the Light theme that turns off the title -->
-    <style name="Theme.IOSched" parent="android:style/Theme.Light">
+    <style name="Theme.IOSched" parent="style/Theme.Sherlock.Light">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
 
@@ -27,12 +27,14 @@
         <item name="textHeaderMaxLines">@integer/text_header_max_lines</item>
         <item name="trackAbstractMaxLines">@integer/track_abstract_max_lines</item>
 
+        
         <!-- for programmatic instantiation -->
-        <item name="actionbarCompatButtonStyle">@style/ActionBarCompatButton</item>
+        <!-- <item name="actionbarCompatButtonStyle">@style/ActionBarCompatButton</item>
         <item name="actionbarCompatProgressIndicatorStyle">@style/ActionBarCompatProgressIndicator</item>
         <item name="actionbarCompatSeparatorStyle">@style/ActionBarCompatSeparator</item>
         <item name="actionbarCompatLogoStyle">@style/ActionBarCompatLogo</item>
         <item name="actionbarCompatTextStyle">@style/ActionBarCompatText</item>
+    	 -->
     </style>
 
     <!-- Start with the Holographic Light theme -->
@@ -40,6 +42,7 @@
         <item name="android:windowBackground">@drawable/background_noise</item>
     </style>
 
+    <!-- 
     <style name="ActionBarCompat">
         <item name="android:id">@id/actionbar_compat</item>
         <item name="android:layout_width">fill_parent</item>
@@ -93,7 +96,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:ellipsize">end</item>
     </style>
-
+ -->
     <style name="DashboardButton">
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:layout_width">wrap_content</item>
@@ -178,35 +181,30 @@
         <item name="android:textColor">@color/body_text_1</item>
         <item name="android:maxLines">?attr/textHeaderMaxLines</item>
         <item name="android:ellipsize">end</item>
-        <item name="android:textIsSelectable">true</item>
     </style>
 
     <style name="TextHeaderSub">
         <item name="android:textSize">@dimen/text_size_small</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textColor">@color/body_text_2</item>
-        <item name="android:textIsSelectable">true</item>
     </style>
 
     <style name="TextHeader2">
         <item name="android:textSize">@dimen/text_size_medium</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/accent_1</item>
-        <item name="android:textIsSelectable">true</item>
     </style>
 
     <style name="TextHeader3">
         <item name="android:textSize">@dimen/text_size_medium</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/body_text_1</item>
-        <item name="android:textIsSelectable">true</item>
     </style>
 
     <style name="TextBody">
         <item name="android:textSize">@dimen/text_size_small</item>
         <item name="android:lineSpacingMultiplier">1.1</item>
         <item name="android:textColor">@color/body_text_1</item>
-        <item name="android:textIsSelectable">true</item>
     </style>
 
     <style name="PushButton">

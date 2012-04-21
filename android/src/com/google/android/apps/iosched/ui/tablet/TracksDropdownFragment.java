@@ -16,6 +16,7 @@
 
 package com.google.android.apps.iosched.ui.tablet;
 
+import com.actionbarsherlock.app.SherlockFragment;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.ui.BaseActivity;
@@ -25,12 +26,12 @@ import com.google.android.apps.iosched.ui.TracksFragment;
 import com.google.android.apps.iosched.util.NotifyingAsyncQueryHandler;
 import com.google.android.apps.iosched.util.UIUtils;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +46,8 @@ import android.widget.TextView;
  *
  * Requires API level 11 or later since {@link ListPopupWindow} is API level 11+.
  */
-public class TracksDropdownFragment extends Fragment implements
+@TargetApi(11)
+public class TracksDropdownFragment extends SherlockFragment implements
         NotifyingAsyncQueryHandler.AsyncQueryListener,
         AdapterView.OnItemClickListener,
         PopupWindow.OnDismissListener {

@@ -16,6 +16,10 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.util.ActivityHelper;
@@ -37,17 +41,12 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
@@ -59,7 +58,7 @@ import android.widget.TextView;
  * A fragment that shows detail information for a session, including session title, abstract,
  * time information, speaker photos and bios, etc.
  */
-public class SessionDetailFragment extends Fragment implements
+public class SessionDetailFragment extends SherlockFragment implements
         NotifyingAsyncQueryHandler.AsyncQueryListener,
         CompoundButton.OnCheckedChangeListener {
     private static final String TAG = "SessionDetailFragment";

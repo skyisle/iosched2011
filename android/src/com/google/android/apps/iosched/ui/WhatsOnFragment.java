@@ -16,6 +16,7 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.app.SherlockFragment;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.ui.tablet.NowPlayingMultiPaneActivity;
@@ -26,7 +27,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,7 +39,7 @@ import android.widget.TextView;
  * It also shows a 'Realtime Search' button on phones, as a replacement for the
  * {@link TagStreamFragment} that is visible on tablets on the home screen.
  */
-public class WhatsOnFragment extends Fragment {
+public class WhatsOnFragment extends SherlockFragment {
 
     private Handler mMessageHandler = new Handler();
 

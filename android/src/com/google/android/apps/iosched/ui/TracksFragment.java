@@ -16,6 +16,7 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.util.AnalyticsUtils;
@@ -35,7 +36,7 @@ import android.widget.ListView;
  * A simple {@link ListFragment} that renders a list of tracks with available sessions or vendors
  * (depending on {@link TracksFragment#EXTRA_NEXT_TYPE}) using a {@link TracksAdapter}.
  */
-public class TracksFragment extends ListFragment implements
+public class TracksFragment extends SherlockListFragment implements
         NotifyingAsyncQueryHandler.AsyncQueryListener {
 
     public static final String EXTRA_NEXT_TYPE = "com.google.android.iosched.extra.NEXT_TYPE";

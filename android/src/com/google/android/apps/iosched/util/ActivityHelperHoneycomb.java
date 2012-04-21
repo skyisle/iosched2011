@@ -15,14 +15,11 @@
  */
 
 package com.google.android.apps.iosched.util;
-
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.android.apps.iosched.R;
-
-import android.app.ActionBar;
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 
 /**
  * An extension of {@link ActivityHelper} that provides Android 3.0-specific functionality for
@@ -31,23 +28,15 @@ import android.view.MenuItem;
 public class ActivityHelperHoneycomb extends ActivityHelper {
     private Menu mOptionsMenu;
 
-    protected ActivityHelperHoneycomb(Activity activity) {
+    protected ActivityHelperHoneycomb(SherlockFragmentActivity activity) {
         super(activity);
     }
 
-    @Override
-    public void onPostCreate(Bundle savedInstanceState) {
-        // Do nothing in onPostCreate. ActivityHelper creates the old action bar, we don't
-        // need to for Honeycomb.
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mOptionsMenu = menu;
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -66,11 +55,11 @@ public class ActivityHelperHoneycomb extends ActivityHelper {
         // NOTE: there needs to be a content view set before this is called, so this method
         // should be called in onPostCreate.
         if (UIUtils.isTablet(mActivity)) {
-            mActivity.getActionBar().setDisplayOptions(
+            mActivity.getSupportActionBar().setDisplayOptions(
                     0,
                     ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
         } else {
-            mActivity.getActionBar().setDisplayOptions(
+            mActivity.getSupportActionBar().setDisplayOptions(
                     ActionBar.DISPLAY_USE_LOGO,
                     ActionBar.DISPLAY_USE_LOGO | ActionBar.DISPLAY_SHOW_TITLE);
         }
@@ -83,11 +72,11 @@ public class ActivityHelperHoneycomb extends ActivityHelper {
         // NOTE: there needs to be a content view set before this is called, so this method
         // should be called in onPostCreate.
         if (UIUtils.isTablet(mActivity)) {
-            mActivity.getActionBar().setDisplayOptions(
+            mActivity.getSupportActionBar().setDisplayOptions(
                     ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO,
                     ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO);
         } else {
-            mActivity.getActionBar().setDisplayOptions(
+            mActivity.getSupportActionBar().setDisplayOptions(
                     0,
                     ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_USE_LOGO);
         }

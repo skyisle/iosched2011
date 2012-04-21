@@ -16,6 +16,10 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.ui.widget.BlockView;
@@ -41,13 +45,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.BaseColumns;
-import android.support.v4.app.Fragment;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,7 +65,7 @@ import java.util.TimeZone;
  * {@link com.google.android.apps.iosched.ui.widget.TimeRulerView},
  * {@link BlocksLayout}, and {@link BlockView}.
  */
-public class ScheduleFragment extends Fragment implements
+public class ScheduleFragment extends SherlockFragment implements
         NotifyingAsyncQueryHandler.AsyncQueryListener,
         ObservableScrollView.OnScrollListener,
         View.OnClickListener {

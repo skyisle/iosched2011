@@ -16,6 +16,10 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.util.AnalyticsUtils;
 
@@ -23,11 +27,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 /**
  * A fragment containing a {@link WebView} pointing to the I/O announcements URL.
  */
-public class BulletinFragment extends Fragment {
+public class BulletinFragment extends SherlockFragment {
 
     private static final Pattern sSiteUrlPattern = Pattern.compile("google\\.com\\/events\\/io");
     private static final String BULLETIN_URL =

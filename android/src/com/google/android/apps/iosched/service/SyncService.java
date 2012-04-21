@@ -84,7 +84,7 @@ public class SyncService extends IntentService {
 
     /** Root worksheet feed for online data source */
     // TODO: insert your sessions/speakers/vendors spreadsheet doc URL here.
-    private static final String WORKSHEETS_URL = "INSERT_SPREADSHEET_URL_HERE";
+    private static final String WORKSHEETS_URL = "http://spreadsheets.google.com/feeds/worksheets/tmaLiaNqIWYYtuuhmIyG0uQ/public/basic";
 
     private static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
     private static final String ENCODING_GZIP = "gzip";

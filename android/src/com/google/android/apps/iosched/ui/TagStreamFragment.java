@@ -16,13 +16,13 @@
 
 package com.google.android.apps.iosched.ui;
 
+import com.actionbarsherlock.app.SherlockFragment;
 import com.google.android.apps.iosched.R;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -39,7 +39,7 @@ import java.net.URLEncoder;
  * provided as the {@link TagStreamFragment#EXTRA_QUERY} extra in the fragment arguments. If no
  * search query is provided, the conference hashtag is used as the default query.
  */
-public class TagStreamFragment extends Fragment {
+public class TagStreamFragment extends SherlockFragment {
 
     private static final String TAG = "TagStreamFragment";
 

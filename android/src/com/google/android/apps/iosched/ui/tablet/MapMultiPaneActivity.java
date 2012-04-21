@@ -28,6 +28,7 @@ import com.google.android.apps.iosched.ui.phone.SessionsActivity;
 import com.google.android.apps.iosched.ui.phone.VendorDetailActivity;
 import com.google.android.apps.iosched.ui.phone.VendorsActivity;
 
+import android.annotation.TargetApi;
 import android.app.FragmentBreadCrumbs;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -42,6 +43,7 @@ import android.view.View;
  *
  * This activity requires API level 11 or greater because of its use of {@link FragmentBreadCrumbs}.
  */
+@TargetApi(11)
 public class MapMultiPaneActivity extends BaseMultiPaneActivity implements
         View.OnClickListener, FragmentManager.OnBackStackChangedListener {
 

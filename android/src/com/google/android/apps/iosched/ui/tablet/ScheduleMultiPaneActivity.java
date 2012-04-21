@@ -23,6 +23,7 @@ import com.google.android.apps.iosched.ui.SessionsFragment;
 import com.google.android.apps.iosched.ui.phone.SessionDetailActivity;
 import com.google.android.apps.iosched.ui.phone.SessionsActivity;
 
+import android.annotation.TargetApi;
 import android.app.FragmentBreadCrumbs;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -38,6 +39,7 @@ import android.view.ViewGroup;
  *
  * This activity requires API level 11 or greater because of its use of {@link FragmentBreadCrumbs}.
  */
+@TargetApi(11)
 public class ScheduleMultiPaneActivity extends BaseMultiPaneActivity implements
         View.OnClickListener, FragmentManager.OnBackStackChangedListener {
 
