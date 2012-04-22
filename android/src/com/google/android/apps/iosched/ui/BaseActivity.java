@@ -19,7 +19,6 @@ package com.google.android.apps.iosched.ui;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.util.ActivityHelper;
 
 import android.content.Intent;
@@ -33,7 +32,7 @@ import android.view.KeyEvent;
  * inherit from {@link BaseSinglePaneActivity} or {@link BaseMultiPaneActivity}.
  */
 public abstract class BaseActivity extends SherlockFragmentActivity {
-    final ActivityHelper mActivityHelper = ActivityHelper.createInstance(this);
+    final ActivityHelper mActivityHelper = new ActivityHelper(this);
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
