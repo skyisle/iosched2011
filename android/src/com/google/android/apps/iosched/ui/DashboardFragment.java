@@ -16,6 +16,13 @@
 
 package com.google.android.apps.iosched.ui;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.actionbarsherlock.app.SherlockFragment;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.ui.phone.ScheduleActivity;
@@ -25,14 +32,7 @@ import com.google.android.apps.iosched.ui.tablet.VendorsMultiPaneActivity;
 import com.google.android.apps.iosched.util.AnalyticsUtils;
 import com.google.android.apps.iosched.util.UIUtils;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-public class DashboardFragment extends Fragment {
+public class DashboardFragment extends SherlockFragment {
 
     public void fireTrackerEvent(String label) {
         AnalyticsUtils.getInstance(getActivity()).trackEvent(

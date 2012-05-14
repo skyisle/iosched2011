@@ -19,6 +19,7 @@ package com.google.android.apps.iosched.ui;
 import static com.google.android.apps.iosched.util.UIUtils.buildStyledSnippet;
 import static com.google.android.apps.iosched.util.UIUtils.formatSessionSubtitle;
 
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.google.android.apps.iosched.R;
 import com.google.android.apps.iosched.provider.ScheduleContract;
 import com.google.android.apps.iosched.util.ActivityHelper;
@@ -47,7 +48,7 @@ import android.widget.TextView;
 /**
  * A {@link ListFragment} showing a list of sessions.
  */
-public class SessionsFragment extends ListFragment implements
+public class SessionsFragment extends SherlockListFragment implements
         NotifyingAsyncQueryHandler.AsyncQueryListener {
 
     public static final String EXTRA_SCHEDULE_TIME_STRING =
